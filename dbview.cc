@@ -20,8 +20,9 @@
 /**
  * Detailed description for constructor.
  */
-DbView::DbView(
-        QWidget *parent)
+DbTableView::DbTableView(
+        QWidget *parent) :
+    QTableView (parent)
 {
     DBVIEW_TRACE_ENTRY;
 
@@ -33,7 +34,7 @@ DbView::DbView(
 /**
  * Detailed description for destructor.
  */
-DbView::~DbView()
+DbTableView::~DbTableView()
 {
     DBVIEW_TRACE_ENTRY;
 
