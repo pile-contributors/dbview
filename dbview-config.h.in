@@ -1,0 +1,131 @@
+/**
+ * @file dbview-config.h
+ * @brief The content of this file is dynamically generated at compile time by CMake.
+ * @author Nicu Tofan <nicu.tofan@gmail.com>
+ * @copyright Copyright 2014 piles contributors. All rights reserved.
+ * This file is released under the
+ * [MIT License](http://opensource.org/licenses/mit-license.html)
+ */
+
+#ifndef GUARD_DBVIEW_CONFIG_H_INCLUDE
+#define GUARD_DBVIEW_CONFIG_H_INCLUDE
+
+/**
+ * @def Qt5Core_FOUND
+ * @brief When defined indicates that the Qt 5 headers are available
+ */
+#ifndef Qt5Core_FOUND
+#cmakedefine Qt5Core_FOUND
+#endif
+
+/**
+ * @def Qt4_FOUND
+ * @brief When defined indicates that the Qt 4 headers are available
+ */
+#ifndef Qt4_FOUND
+#cmakedefine Qt4_FOUND
+#endif
+
+/**
+ * @def PILES_HAVE_QT
+ * @brief When defined indicates that either Qt 4 or Qt 5 headers are available
+ */
+#if defined(Qt5Core_FOUND) || defined(Qt4_FOUND)
+#ifndef PILES_HAVE_QT
+#define PILES_HAVE_QT
+#endif
+#endif
+
+// use Qt definitions when available
+#ifdef PILES_HAVE_QT
+#include <QtGlobal>
+#endif
+
+//! the name of this project
+#define DBVIEW_PROJECT_NAME       "@DBVIEW_NAME@"
+
+//! major version (ABI not preserved between these)
+#define DBVIEW_MAJOR_VERSION      (@DBVIEW_MAJOR_VERSION@)
+
+//! minor version; ABI is preserved
+#define DBVIEW_MINOR_VERSION      (@DBVIEW_MINOR_VERSION@)
+
+//! bug fixes
+#define DBVIEW_PATCH_VERSION      (@DBVIEW_PATCH_VERSION@)
+
+//! the version as a 32-bit integer
+#define DBVIEW_VERSION            (\
+    DBVIEW_MAJOR_VERSION * 0x100000 + \
+    DBVIEW_MINOR_VERSION * 0x1000 + \
+    DBVIEW_PATCH_VERSION * 0x1)
+
+//! version as a string
+#define DBVIEW_VERSION_STRING     "@DBVIEW_VERSION_STRING@"
+
+//! when it was build (UTC)
+#define DBVIEW_BUILD_TIME         "@DBVIEW_BUILD_TIME@"
+
+
+/**
+ * @def DBVIEW_DEBUG
+ * @brief Indicates whether the debug features should be enabled or disabled
+ */
+#ifndef DBVIEW_DEBUG
+#  ifdef DBVIEW_FORCE_DEBUG
+#    define DBVIEW_DEBUG 1
+#  else
+#cmakedefine DBVIEW_DEBUG
+#  endif
+#endif
+
+
+/**
+ * @def DBVIEW_STATIC
+ * @brief If defined it indicates a static library being build
+ */
+#cmakedefine DBVIEW_STATIC
+
+/**
+ * @def DBVIEW_PILE
+ * @brief If defined it indicates a pile usage
+ */
+#cmakedefine DBVIEW_PILE
+
+
+/**
+ * @def DBVIEW_SHARED
+ * @brief If defined it indicates a shared library
+ *
+ * DBVIEW_SHARED is defined when building the project
+ * and undefined when a file from another project
+ * includes the file.
+ */
+
+
+/**
+ * @def DBVIEW_EXPORT
+ * @brief makes the sources compatible with all kinds of deployments.
+ */
+#if defined(DBVIEW_STATIC)
+#   define      DBVIEW_EXPORT
+#elif defined(DBVIEW_PILE)
+#   define      DBVIEW_EXPORT      @DBVIEW_EXPORT@
+#elif defined(DBVIEW_SHARED)
+#   ifdef PILES_HAVE_QT
+#       define  DBVIEW_EXPORT      Q_DECL_EXPORT
+#   elif defined(_MSC_VER)
+#       define  DBVIEW_EXPORT      __declspec(dllexport)
+#   else
+#       define  DBVIEW_EXPORT      __attribute__((visibility("default")))
+#   endif
+#else
+#   ifdef PILES_HAVE_QT
+#       define  DBVIEW_EXPORT      Q_DECL_IMPORT
+#   elif defined(_MSC_VER)
+#       define  DBVIEW_EXPORT      __declspec(dllimport)
+#   else
+#       define  DBVIEW_EXPORT      __attribute__((visibility("default")))
+#   endif
+#endif
+
+#endif // GUARD_DBVIEW_CONFIG_H_INCLUDE
