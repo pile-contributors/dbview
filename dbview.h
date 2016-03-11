@@ -11,14 +11,16 @@
 #define GUARD_DBVIEW_H_INCLUDE
 
 #include <dbview/dbview-config.h>
+#include <QTableView>
 
-//! brief description
-class DBVIEW_EXPORT DbView {
+//! A table view of a database table.
+class DBVIEW_EXPORT DbView : public QTableView {
 
 public:
 
     //! Default constructor.
-    DbView ();
+    DbView (
+            QWidget *parent = 0);
 
     //! Destructor.
     virtual ~DbView();
