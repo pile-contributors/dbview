@@ -33,7 +33,7 @@ macro    (dbviewInit
         "ON"
         "${ref_cnt_use_mode}"
         ""
-        "category1"
-        "tag1;tag2")
+        "database"
+        "qt;GUI")
 
 endmacro ()

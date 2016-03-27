@@ -1,5 +1,5 @@
 /**
- * @file dbTableview.h
+ * @file dbview.h
  * @brief Declarations for DbTableView class
  * @author Nicu Tofan <nicu.tofan@gmail.com>
  * @copyright Copyright 2014 piles contributors. All rights reserved.
