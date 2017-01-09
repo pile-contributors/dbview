@@ -21,11 +21,14 @@ macro    (dbviewInit
         "dbview.h")
     set(DBVIEW_SOURCES
         "dbview.cc")
+    set(DBVIEW_UIS
+        "dbview.ui")
 
     pileSetSources(
         "${DBVIEW_INIT_NAME}"
         "${DBVIEW_HEADERS}"
-        "${DBVIEW_SOURCES}")
+        "${DBVIEW_SOURCES}"
+        "${DBVIEW_UIS}")
 
     pileSetCommon(
         "${DBVIEW_INIT_NAME}"

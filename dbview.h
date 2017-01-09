@@ -13,8 +13,36 @@
 #include <dbview/dbview-config.h>
 #include <QTableView>
 
+namespace Ui {
+class DbView;
+}
+
 //! A table view of a database table.
-class DBVIEW_EXPORT DbTableView : public QTableView {
+class DBVIEW_EXPORT DbTableView : public QWidget {
+    Q_OBJECT
+
+    Q_PROPERTY(bool showGrid READ showGrid WRITE setShowGrid)
+    Q_PROPERTY(Qt::PenStyle gridStyle READ gridStyle WRITE setGridStyle)
+    Q_PROPERTY(bool sortingEnabled READ isSortingEnabled WRITE setSortingEnabled)
+    Q_PROPERTY(bool wordWrap READ wordWrap WRITE setWordWrap)
+    Q_PROPERTY(bool autoScroll READ hasAutoScroll WRITE setAutoScroll)
+    Q_PROPERTY(int autoScrollMargin READ autoScrollMargin WRITE setAutoScrollMargin)
+    Q_PROPERTY(QAbstractItemView::EditTriggers editTriggers READ editTriggers WRITE setEditTriggers)
+    Q_PROPERTY(bool tabKeyNavigation READ tabKeyNavigation WRITE setTabKeyNavigation)
+#ifndef QT_NO_DRAGANDDROP
+    Q_PROPERTY(bool showDropIndicator READ showDropIndicator WRITE setDropIndicatorShown)
+    Q_PROPERTY(bool dragEnabled READ dragEnabled WRITE setDragEnabled)
+    Q_PROPERTY(bool dragDropOverwriteMode READ dragDropOverwriteMode WRITE setDragDropOverwriteMode)
+    Q_PROPERTY(QAbstractItemView::DragDropMode dragDropMode READ dragDropMode WRITE setDragDropMode)
+    Q_PROPERTY(Qt::DropAction defaultDropAction READ defaultDropAction WRITE setDefaultDropAction)
+#endif
+    Q_PROPERTY(bool alternatingRowColors READ alternatingRowColors WRITE setAlternatingRowColors)
+    Q_PROPERTY(QTableView::SelectionMode selectionMode READ selectionMode WRITE setSelectionMode)
+    Q_PROPERTY(QTableView::SelectionBehavior selectionBehavior READ selectionBehavior WRITE setSelectionBehavior)
+    Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize NOTIFY iconSizeChanged)
+    Q_PROPERTY(Qt::TextElideMode textElideMode READ textElideMode WRITE setTextElideMode)
+    Q_PROPERTY(QTableView::ScrollMode verticalScrollMode READ verticalScrollMode WRITE setVerticalScrollMode RESET resetVerticalScrollMode)
+    Q_PROPERTY(QTableView::ScrollMode horizontalScrollMode READ horizontalScrollMode WRITE setHorizontalScrollMode RESET resetHorizontalScrollMode)
 
 public:
 
@@ -25,9 +53,204 @@ public:
     //! Destructor.
     virtual ~DbTableView();
 
+    //! Get a pointer to internal table view.
+    virtual QTableView*
+    internalTableView ();
+
+    /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+    /** @name QAbstractItemView Emulation
+     * Methods with same signature as those found in
+     * QAbstractItemView.
+     */
+    ///@{
+
+    QAbstractScrollArea::Shape frameShape() const;
+    void setFrameShape(QAbstractScrollArea::Shape);
+    QAbstractScrollArea::Shadow frameShadow() const;
+    void setFrameShadow(QAbstractScrollArea::Shadow);
+
+    ///@}
+    /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+
+
+    /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+    /** @name QAbstractItemView Emulation
+     * Methods with same signature as those found in
+     * QAbstractItemView.
+     */
+    ///@{
+
+
+    void setItemDelegate(QAbstractItemDelegate *delegate);
+    QAbstractItemDelegate *itemDelegate() const;
+
+    void setSelectionMode(QAbstractItemView::SelectionMode mode);
+    QAbstractItemView::SelectionMode selectionMode() const;
+
+    void setSelectionBehavior(QAbstractItemView::SelectionBehavior behavior);
+    QAbstractItemView::SelectionBehavior selectionBehavior() const;
+
+    QModelIndex currentIndex() const;
+    QModelIndex rootIndex() const;
+
+    void setEditTriggers(QAbstractItemView::EditTriggers triggers);
+    QAbstractItemView::EditTriggers editTriggers() const;
+
+    void setVerticalScrollMode(QAbstractItemView::ScrollMode mode);
+    QAbstractItemView::ScrollMode verticalScrollMode() const;
+    void resetVerticalScrollMode();
+
+    void setHorizontalScrollMode(QAbstractItemView::ScrollMode mode);
+    QAbstractItemView::ScrollMode horizontalScrollMode() const;
+    void resetHorizontalScrollMode();
+
+    void setAutoScroll(bool enable);
+    bool hasAutoScroll() const;
+
+    void setAutoScrollMargin(int margin);
+    int autoScrollMargin() const;
+
+    void setTabKeyNavigation(bool enable);
+    bool tabKeyNavigation() const;
+
+#ifndef QT_NO_DRAGANDDROP
+    void setDropIndicatorShown(bool enable);
+    bool showDropIndicator() const;
+
+    void setDragEnabled(bool enable);
+    bool dragEnabled() const;
+
+    void setDragDropOverwriteMode(bool overwrite);
+    bool dragDropOverwriteMode() const;
+
+    void setDragDropMode(QAbstractItemView::DragDropMode behavior);
+    QAbstractItemView::DragDropMode dragDropMode() const;
+
+    void setDefaultDropAction(Qt::DropAction dropAction);
+    Qt::DropAction defaultDropAction() const;
+#endif
+
+    void setAlternatingRowColors(bool enable);
+    bool alternatingRowColors() const;
+
+    void setIconSize(const QSize &size);
+    QSize iconSize() const;
+
+    void setTextElideMode(Qt::TextElideMode mode);
+    Qt::TextElideMode textElideMode() const;
+
+    virtual void keyboardSearch(const QString &search);
+
+    void openPersistentEditor(const QModelIndex &index);
+    void closePersistentEditor(const QModelIndex &index);
+
+    void setIndexWidget(const QModelIndex &index, QWidget *widget);
+    QWidget *indexWidget(const QModelIndex &index) const;
+
+    void setItemDelegateForRow(int row, QAbstractItemDelegate *delegate);
+    QAbstractItemDelegate *itemDelegateForRow(int row) const;
+
+    void setItemDelegateForColumn(int column, QAbstractItemDelegate *delegate);
+    QAbstractItemDelegate *itemDelegateForColumn(int column) const;
+
+    QAbstractItemDelegate *itemDelegate(const QModelIndex &index) const;
+
+    virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
+
+
+    ///@}
+    /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+
+
+    /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+    /** @name QTableView Emulation
+     * Methods with same signature as those found in
+     * QTableView.
+     */
+    ///@{
+
+    virtual void setModel(QAbstractItemModel *model);
+    virtual QAbstractItemModel * model () const;
+    virtual void setRootIndex(const QModelIndex &index);
+    virtual void setSelectionModel(QItemSelectionModel *selectionModel);
+    virtual QItemSelectionModel* selectionModel() const;
+    virtual void doItemsLayout();
+
+    QHeaderView *horizontalHeader() const;
+    QHeaderView *verticalHeader() const;
+    void setHorizontalHeader(QHeaderView *header);
+    void setVerticalHeader(QHeaderView *header);
+
+    int rowViewportPosition(int row) const;
+    int rowAt(int y) const;
+
+    void setRowHeight(int row, int height);
+    int rowHeight(int row) const;
+
+    int columnViewportPosition(int column) const;
+    int columnAt(int x) const;
+
+    void setColumnWidth(int column, int width);
+    int columnWidth(int column) const;
+
+    bool isRowHidden(int row) const;
+    void setRowHidden(int row, bool hide);
+
+    bool isColumnHidden(int column) const;
+    void setColumnHidden(int column, bool hide);
+
+    void setSortingEnabled(bool enable);
+    bool isSortingEnabled() const;
+
+    bool showGrid() const;
+
+    Qt::PenStyle gridStyle() const;
+    void setGridStyle(Qt::PenStyle style);
+
+    void setWordWrap(bool on);
+    bool wordWrap() const;
+
+    void setCornerButtonEnabled(bool enable);
+    bool isCornerButtonEnabled() const;
+
+    virtual QRect visualRect(const QModelIndex &index) const;
+    virtual void scrollTo(const QModelIndex &index, QTableView::ScrollHint hint = QTableView::EnsureVisible);
+    virtual QModelIndex indexAt(const QPoint &p) const;
+
+    void setSpan(int row, int column, int rowSpan, int columnSpan);
+    int rowSpan(int row, int column) const;
+    int columnSpan(int row, int column) const;
+    void clearSpans();
+
+    void sortByColumn(int column, Qt::SortOrder order);
+
+public Q_SLOTS:
+    void selectRow(int row);
+    void selectColumn(int column);
+    void hideRow(int row);
+    void hideColumn(int column);
+    void showRow(int row);
+    void showColumn(int column);
+    void resizeRowToContents(int row);
+    void resizeRowsToContents();
+    void resizeColumnToContents(int column);
+    void resizeColumnsToContents();
+    void sortByColumn(int column);
+    void setShowGrid(bool show);
+
+
+
+    ///@}
+    /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+
+Q_SIGNALS:
+
+    void iconSizeChanged(const QSize &size);
+
 protected:
 
 private:
+    Ui::DbView *ui;
 
 };
 
