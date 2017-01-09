@@ -10,6 +10,7 @@
 #include "dbview.h"
 #include "dbview-private.h"
 #include "ui_dbview.h"
+#include "dbviewinmo.h"
 
 /**
  * @class DbView
@@ -24,13 +25,15 @@
 DbTableView::DbTableView(
         QWidget *parent) :
     QWidget (parent),
-    ui(new Ui::DbView)
+    ui(new Ui::DbView),
+    inmo(new impl::InMo (this))
 {
     DBVIEW_TRACE_ENTRY;
     ui->setupUi(this);
 
     connect(ui->tableView, &QAbstractItemView::iconSizeChanged,
             this, &DbTableView::iconSizeChanged);
+
     DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
@@ -42,7 +45,6 @@ DbTableView::DbTableView(
 DbTableView::~DbTableView()
 {
     DBVIEW_TRACE_ENTRY;
-
     DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
@@ -57,16 +59,21 @@ QTableView *DbTableView::internalTableView ()
 }
 /* ========================================================================= */
 
-
+/* ------------------------------------------------------------------------- */
 void DbTableView::setModel (QAbstractItemModel *model)
 {
-    ui->tableView->setModel (model);
+    ui->tableView->setModel (NULL);
+    inmo->setUserModel (model);
+    ui->tableView->setModel (inmo);
 }
+/* ========================================================================= */
 
+/* ------------------------------------------------------------------------- */
 QAbstractItemModel * DbTableView::model () const
 {
-    return ui->tableView->model ();
+    return inmo->userModel ();
 }
+/* ========================================================================= */
 
 void DbTableView::setRootIndex (const QModelIndex &index)
 {

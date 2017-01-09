@@ -20,7 +20,8 @@ macro    (dbviewInit
     set(DBVIEW_HEADERS
         "dbview.h")
     set(DBVIEW_SOURCES
-        "dbview.cc")
+        "dbview.cc"
+        "dbviewinmo.cc")
     set(DBVIEW_UIS
         "dbview.ui")
 

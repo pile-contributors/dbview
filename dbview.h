@@ -17,6 +17,10 @@ namespace Ui {
 class DbView;
 }
 
+namespace impl {
+class InMo;
+}
+
 //! A table view of a database table.
 class DBVIEW_EXPORT DbTableView : public QWidget {
     Q_OBJECT
@@ -251,7 +255,7 @@ protected:
 
 private:
     Ui::DbView *ui;
-
+    impl::InMo * inmo;
 };
 
 #endif // GUARD_DBTABLEVIEW_H_INCLUDE
