@@ -44,9 +44,12 @@
 /* ------------------------------------------------------------------------- */
 DbViewColHdr::DbViewColHdr (DbTableView *table, QWidget *parent)
     : QHeaderView (Qt::Horizontal, parent),
-      table_(table)
+      table_(table),
+      controls_()
 {
     Q_ASSERT(table != NULL);
+    connect(this, &QHeaderView::sectionResized,
+            this, &DbViewColHdr::resizeControl);
 }
 /* ========================================================================= */
 
@@ -54,6 +57,36 @@ DbViewColHdr::DbViewColHdr (DbTableView *table, QWidget *parent)
 DbViewColHdr::~DbViewColHdr()
 {
 
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbViewColHdr::setControl (int column, QWidget *widget)
+{
+    int fcnt = controls_.count ();
+    if (column == fcnt) {
+        controls_.append (widget);
+    } else if (column > fcnt) {
+        do {
+             controls_.append (NULL);
+             ++fcnt;
+        } while (column > fcnt);
+        controls_.append (widget);
+    } else {
+        QWidget * prev = controls_[column];
+        controls_[column] = widget;
+        if (prev!= NULL) {
+            delete prev;
+        }
+    }
+    if (widget != NULL) {
+        widget->setParent (this);
+        int width = 30;
+        if (count() > column) {
+            width = sectionSize(column);
+        }
+        widget->resize (width, this->height());
+    }
 }
 /* ========================================================================= */
 
@@ -71,6 +104,18 @@ void DbViewColHdr::paintSection (
     }
 }
 /* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbViewColHdr::resizeControl (int logicalIndex, int oldSize, int newSize)
+{
+    if (controls_.count() <= logicalIndex)
+        return;
+
+    QWidget * w = controls_[logicalIndex];
+    w->resize (newSize, w->height ());
+}
+/* ========================================================================= */
+
 
 /*  CLASS    =============================================================== */
 //

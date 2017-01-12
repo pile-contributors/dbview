@@ -44,6 +44,7 @@ class DbTableView;
 
 //! Header for columns.
 class DBVIEW_EXPORT DbViewColHdr : public QHeaderView {
+    Q_OBJECT
     //
     //
     //
@@ -59,7 +60,9 @@ class DBVIEW_EXPORT DbViewColHdr : public QHeaderView {
     /*  DATA    ------------------------------------------------------------ */
 
 private:
+
     DbTableView * table_;
+    QList<QWidget*> controls_;
 
     /*  DATA    ============================================================ */
     //
@@ -78,6 +81,22 @@ public:
     //! destructor
     virtual ~DbViewColHdr();
 
+    //! Set the control for a column.
+    void
+    setControl (
+            int column,
+            QWidget * widget);
+
+    //! Tell if a column has a control installed.
+    bool
+    hasControl (
+            int column) const {
+        if (controls_.count() <= column)
+            return false;
+        return (controls_[column] != NULL);
+    }
+
+
 protected:
 
     void
@@ -90,7 +109,13 @@ private:
 
 signals:
 
-public slots:
+private slots:
+
+    void
+    resizeControl (
+            int logicalIndex,
+            int oldSize,
+            int newSize);
 
     /*  FUNCTIONS    ======================================================= */
     //
