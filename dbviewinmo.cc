@@ -1,4 +1,6 @@
 #include "dbviewinmo.h"
+#include "dbviewmo.h"
+#include "dbviewcolfilter.h"
 
 using namespace impl;
 /* ========================================================================= */
@@ -12,7 +14,7 @@ InMo::InMo(QObject *parent) :
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-void InMo::setUserModel(QAbstractItemModel *model)
+void InMo::setUserModel(DbViewMo *model)
 {
     beginResetModel();
     if (user_model_!= NULL) {
@@ -27,8 +29,11 @@ void InMo::setUserModel(QAbstractItemModel *model)
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-void InMo::connectModel (QAbstractItemModel *model)
+void InMo::connectModel (DbViewMo *user_model)
 {
+    QAbstractItemModel * model = user_model->qtModel ();
+    Q_ASSERT(model != NULL);
+
     connect(model, &QAbstractItemModel::dataChanged,
             this, &QAbstractItemModel::dataChanged);
     connect(model, &QAbstractItemModel::headerDataChanged,
@@ -69,51 +74,55 @@ void InMo::connectModel (QAbstractItemModel *model)
             this, &QAbstractItemModel::columnsAboutToBeMoved);
     connect(model, &QAbstractItemModel::columnsMoved,
             this, &QAbstractItemModel::columnsMoved);
+
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
 void InMo::disconnectModel ()
 {
-    disconnect(user_model_, &QAbstractItemModel::dataChanged,
+    QAbstractItemModel * model = user_model_->qtModel ();
+    Q_ASSERT(model != NULL);
+
+    disconnect(model, &QAbstractItemModel::dataChanged,
             this, &QAbstractItemModel::dataChanged);
-    disconnect(user_model_, &QAbstractItemModel::headerDataChanged,
+    disconnect(model, &QAbstractItemModel::headerDataChanged,
             this, &QAbstractItemModel::headerDataChanged);
-    disconnect(user_model_, &QAbstractItemModel::layoutChanged,
+    disconnect(model, &QAbstractItemModel::layoutChanged,
             this, &QAbstractItemModel::layoutChanged);
-    disconnect(user_model_, &QAbstractItemModel::layoutAboutToBeChanged,
+    disconnect(model, &QAbstractItemModel::layoutAboutToBeChanged,
             this, &QAbstractItemModel::layoutAboutToBeChanged);
 
-    disconnect(user_model_, &QAbstractItemModel::rowsAboutToBeInserted,
+    disconnect(model, &QAbstractItemModel::rowsAboutToBeInserted,
             this, &QAbstractItemModel::rowsAboutToBeInserted);
-    disconnect(user_model_, &QAbstractItemModel::rowsInserted,
+    disconnect(model, &QAbstractItemModel::rowsInserted,
             this, &QAbstractItemModel::rowsInserted);
-    disconnect(user_model_, &QAbstractItemModel::rowsAboutToBeRemoved,
+    disconnect(model, &QAbstractItemModel::rowsAboutToBeRemoved,
             this, &QAbstractItemModel::rowsAboutToBeRemoved);
-    disconnect(user_model_, &QAbstractItemModel::rowsRemoved,
+    disconnect(model, &QAbstractItemModel::rowsRemoved,
             this, &QAbstractItemModel::rowsRemoved);
 
-    disconnect(user_model_, &QAbstractItemModel::columnsAboutToBeInserted,
+    disconnect(model, &QAbstractItemModel::columnsAboutToBeInserted,
             this, &QAbstractItemModel::columnsAboutToBeInserted);
-    disconnect(user_model_, &QAbstractItemModel::columnsInserted,
+    disconnect(model, &QAbstractItemModel::columnsInserted,
             this, &QAbstractItemModel::columnsInserted);
-    disconnect(user_model_, &QAbstractItemModel::columnsAboutToBeRemoved,
+    disconnect(model, &QAbstractItemModel::columnsAboutToBeRemoved,
             this, &QAbstractItemModel::columnsAboutToBeRemoved);
-    disconnect(user_model_, &QAbstractItemModel::columnsRemoved,
+    disconnect(model, &QAbstractItemModel::columnsRemoved,
             this, &QAbstractItemModel::columnsRemoved);
 
-    disconnect(user_model_, &QAbstractItemModel::modelAboutToBeReset,
+    disconnect(model, &QAbstractItemModel::modelAboutToBeReset,
             this, &QAbstractItemModel::modelAboutToBeReset);
-    disconnect(user_model_, &QAbstractItemModel::modelReset,
+    disconnect(model, &QAbstractItemModel::modelReset,
             this, &QAbstractItemModel::modelReset);
-    disconnect(user_model_, &QAbstractItemModel::rowsAboutToBeMoved,
+    disconnect(model, &QAbstractItemModel::rowsAboutToBeMoved,
             this, &QAbstractItemModel::rowsAboutToBeMoved);
-    disconnect(user_model_, &QAbstractItemModel::rowsMoved,
+    disconnect(model, &QAbstractItemModel::rowsMoved,
             this, &QAbstractItemModel::rowsMoved);
 
-    disconnect(user_model_, &QAbstractItemModel::columnsAboutToBeMoved,
+    disconnect(model, &QAbstractItemModel::columnsAboutToBeMoved,
             this, &QAbstractItemModel::columnsAboutToBeMoved);
-    disconnect(user_model_, &QAbstractItemModel::columnsMoved,
+    disconnect(model, &QAbstractItemModel::columnsMoved,
             this, &QAbstractItemModel::columnsMoved);
 }
 /* ========================================================================= */
@@ -125,8 +134,11 @@ QVariant InMo::headerData (
     if (user_model_ == NULL)
         return QVariant();
 
+    QAbstractItemModel * model = user_model_->qtModel ();
+    Q_ASSERT(model != NULL);
+
     if (orientation == Qt::Horizontal) {
-        return user_model_->headerData (section, orientation, role);
+        return model->headerData (section, orientation, role);
     }
 
 
@@ -155,7 +167,8 @@ int InMo::columnCount (const QModelIndex &parent) const
     if (parent.isValid())
         return 0;
 
-    return user_model_->columnCount ();
+    QAbstractItemModel * model = user_model_->qtModel ();
+    return model->columnCount ();
 }
 /* ========================================================================= */
 
@@ -165,8 +178,18 @@ QVariant InMo::data (const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
+    QAbstractItemModel * model = user_model_->qtModel ();
+    Q_ASSERT(model != NULL);
+
     // FIXME: Implement me!
     return QVariant();
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void InMo::reloadWithFilters (const QList<DbViewColFilter *> &filters)
+{
+    user_model_->reloadWithFilters (filters);
 }
 /* ========================================================================= */
 

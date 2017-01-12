@@ -13,6 +13,9 @@
 #include <dbview/dbview-config.h>
 #include <QTableView>
 
+class DbViewMo;
+class DbViewColFilter;
+
 namespace Ui {
 class DbView;
 }
@@ -61,13 +64,105 @@ public:
     virtual QTableView*
     internalTableView ();
 
+    //! Change the model that we're presenting.
+    virtual void
+    setUserModel (
+            DbViewMo *model);
+
+    //! Get the model that we're presenting.
+    virtual  DbViewMo *
+    userModel () const;
+
+    //! Reaquire the data.
+    virtual void
+    f5 () const;
+
+
+
+
+    /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+    /** @name Filters
+     * This section deals with filters that may be applied
+     * to columns. The implementation is based on a list of
+     * DbViewColFilter that are owned by this instance
+     * and deal with the GUI control and the filter value
+     * that is send back to the model through its
+     * DbViewMo::reloadWithFilters() method.
+     */
+    ///@{
+
+    //! Get the filters to be used with the model.
+    const QList<DbViewColFilter*> &
+    colFilters () const {
+        return filters_;
+    }
+
+    //! Tell if a column has a filter installed.
+    bool
+    hasFilter (
+            int column) const {
+        if (filters_.count() <= column)
+            return false;
+        return (filters_[column] != NULL);
+    }
+
+
+    //! Filter contents in a column using a simple string filtering.
+    virtual void
+    setColumnFilter (
+            int column,
+            bool include,
+            const QString & value);
+
+    //! Filter contents in a column using a custom filtering.
+    virtual void
+    setColumnFilter (
+            int column,
+            bool include,
+            const QStringList & value);
+
+    //! Filter contents in a column using a custom filtering.
+    virtual void
+    setColumnFilterChoice (
+            int column,
+            bool include,
+            const QStringList & value);
+
+    //! Filter contents in a column using a custom filtering.
+    virtual void
+    setColumnFilter (
+            int column,
+            DbViewColFilter * value);
+
+private:
+
+    //! Delete all filters.
+    void
+    eraseFilters ();
+
+    //! Update the header to show proper widgets.
+    void
+    setAllFilterWidgets ();
+
+    //! Change a filter to the one specified in argument.
+    void
+    changeFilterData (
+            int column,
+            DbViewColFilter * value);
+
+    ///@}
+    /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+
+
+
+
     /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
     /** @name QAbstractItemView Emulation
      * Methods with same signature as those found in
      * QAbstractItemView.
      */
     ///@{
-
+public:
     QAbstractScrollArea::Shape frameShape() const;
     void setFrameShape(QAbstractScrollArea::Shape);
     QAbstractScrollArea::Shadow frameShadow() const;
@@ -173,13 +268,16 @@ public:
      */
     ///@{
 
-    virtual void setModel(QAbstractItemModel *model);
+private:
+    virtual void setModel(QAbstractItemModel *model) {}
     virtual QAbstractItemModel * model () const;
+
     virtual void setRootIndex(const QModelIndex &index);
     virtual void setSelectionModel(QItemSelectionModel *selectionModel);
     virtual QItemSelectionModel* selectionModel() const;
     virtual void doItemsLayout();
 
+public:
     QHeaderView *horizontalHeader() const;
     QHeaderView *verticalHeader() const;
     void setHorizontalHeader(QHeaderView *header);
@@ -242,8 +340,6 @@ public Q_SLOTS:
     void sortByColumn(int column);
     void setShowGrid(bool show);
 
-
-
     ///@}
     /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
@@ -256,6 +352,7 @@ protected:
 private:
     Ui::DbView *ui;
     impl::InMo * inmo;
+    QList<DbViewColFilter*> filters_;
 };
 
 #endif // GUARD_DBTABLEVIEW_H_INCLUDE

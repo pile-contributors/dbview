@@ -3,6 +3,9 @@
 
 #include <QAbstractTableModel>
 
+class DbViewMo;
+class DbViewColFilter;
+
 namespace impl
 {
 
@@ -19,7 +22,7 @@ public:
             QObject *parent = 0);
 
     //! The model that has actual data.
-    QAbstractItemModel *
+    DbViewMo *
     userModel () const {
         return user_model_;
     }
@@ -27,7 +30,7 @@ public:
     //! Change the model that has actual data.
     void
     setUserModel (
-            QAbstractItemModel *model);
+            DbViewMo *model);
 
     QVariant
     headerData (
@@ -48,12 +51,17 @@ public:
             const QModelIndex &index,
             int role = Qt::DisplayRole) const override;
 
+    //! The user requested data to be filtered.
+    virtual void
+    reloadWithFilters (
+            const QList<DbViewColFilter*> &filters);
+
 private:
-    void connectModel (QAbstractItemModel *model);
+    void connectModel (DbViewMo *model);
     void disconnectModel ();
 
 
-    QAbstractItemModel * user_model_;
+    DbViewMo * user_model_;
     int crt_row_count_;
 };
 } // namespace impl

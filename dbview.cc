@@ -11,6 +11,10 @@
 #include "dbview-private.h"
 #include "ui_dbview.h"
 #include "dbviewinmo.h"
+#include "dbviewmo.h"
+#include "dbviewcolhdr.h"
+#include "dbviewcolfilter.h"
+#include "dbviewcolhdr.h"
 
 /**
  * @class DbView
@@ -34,6 +38,10 @@ DbTableView::DbTableView(
     connect(ui->tableView, &QAbstractItemView::iconSizeChanged,
             this, &DbTableView::iconSizeChanged);
 
+    DbViewColHdr * hdr = new DbViewColHdr (this, this);
+    setHorizontalHeader (hdr);
+    hdr->setSectionsClickable (true);
+
     DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
@@ -45,6 +53,8 @@ DbTableView::DbTableView(
 DbTableView::~DbTableView()
 {
     DBVIEW_TRACE_ENTRY;
+    eraseFilters ();
+    // inmo deleted by parent-son relation
     DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
@@ -60,18 +70,145 @@ QTableView *DbTableView::internalTableView ()
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-void DbTableView::setModel (QAbstractItemModel *model)
+void DbTableView::setUserModel (DbViewMo *model)
 {
+    DBVIEW_TRACE_ENTRY;
+    eraseFilters ();
     ui->tableView->setModel (NULL);
     inmo->setUserModel (model);
     ui->tableView->setModel (inmo);
+    setAllFilterWidgets ();
+    DBVIEW_TRACE_EXIT;
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+DbViewMo *DbTableView::userModel () const
+{
+    return inmo->userModel ();
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::f5 () const
+{
+    DBVIEW_TRACE_ENTRY;
+    inmo->reloadWithFilters (filters_);
+    DBVIEW_TRACE_EXIT;
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::setColumnFilter (
+        int column, bool include, const QString &value)
+{
+    DBVIEW_TRACE_ENTRY;
+    changeFilterData (column, new DbViewColFilterPattern (value, include));
+    DBVIEW_TRACE_EXIT;
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::setColumnFilter (
+        int column, bool include, const QStringList &value)
+{
+    DBVIEW_TRACE_ENTRY;
+    changeFilterData (column, new DbViewColFilterList (value, include));
+    DBVIEW_TRACE_EXIT;
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::setColumnFilterChoice (
+        int column, bool include, const QStringList &value)
+{
+    DBVIEW_TRACE_ENTRY;
+    changeFilterData (column, new DbViewColFilterChoice (value, -1, include));
+    DBVIEW_TRACE_EXIT;
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+/**
+ * This allows the user full control over the filtering including
+ * the widget used for changing the values and the result that is returned
+ * to collectFilters().
+ *
+ * @param column The index of the column where this is to be installed.
+ * @param value the custom filtering class; ownership of the pointer is
+ * transferred to this instance
+ */
+void DbTableView::setColumnFilter (int column, DbViewColFilter * value)
+{
+    DBVIEW_TRACE_ENTRY;
+    changeFilterData (column, value);
+    DBVIEW_TRACE_EXIT;
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::eraseFilters ()
+{
+    DBVIEW_TRACE_ENTRY;
+    qDeleteAll (filters_);
+    filters_.clear ();
+    DBVIEW_TRACE_EXIT;
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::setAllFilterWidgets ()
+{
+    DBVIEW_TRACE_ENTRY;
+    QHeaderView *hhdr = horizontalHeader ();
+
+    int i_max = inmo->columnCount ();
+    for (int i = 0; i < i_max; ++i) {
+        if ((filters_.count() <= i) || (filters_[i] == NULL)) {
+
+        } else {
+
+        }
+    }
+    DBVIEW_TRACE_EXIT;
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::changeFilterData (int column, DbViewColFilter *value)
+{
+    DBVIEW_TRACE_ENTRY;
+    int fcnt = filters_.count ();
+    int ccnt = inmo->columnCount ();
+    if (column > ccnt) {
+        DBVIEW_DEBUGM("Warning! Column %d outside of model "
+                      "range for columns (0-%d)",
+                      column, ccnt);
+    }
+
+    if (column == fcnt) {
+        filters_.append (value);
+    } else if (column > fcnt) {
+        do {
+             filters_.append (NULL);
+             ++fcnt;
+        } while (column > fcnt);
+        filters_.append (value);
+    } else {
+        DbViewColFilter * prev = filters_[column];
+        filters_[column] = value;
+        if (prev!= NULL) {
+            delete prev;
+        }
+    }
+    DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
 QAbstractItemModel * DbTableView::model () const
 {
-    return inmo->userModel ();
+    return inmo->userModel ()->qtModel ();
 }
 /* ========================================================================= */
 
