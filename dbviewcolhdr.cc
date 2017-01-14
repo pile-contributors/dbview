@@ -116,6 +116,17 @@ void DbViewColHdr::resizeControl (int logicalIndex, int oldSize, int newSize)
 }
 /* ========================================================================= */
 
+/* ------------------------------------------------------------------------- */
+void DbViewColHdr::removeAllControls ()
+{
+    foreach(QWidget * wdg, controls_) {
+        if (wdg != NULL) {
+            wdg->deleteLater ();
+        }
+    }
+    controls_.clear ();
+}
+/* ========================================================================= */
 
 /*  CLASS    =============================================================== */
 //

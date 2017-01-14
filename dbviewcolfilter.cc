@@ -23,6 +23,10 @@
 
 #include "dbviewcolfilter.h"
 
+#include <QTextEdit>
+#include <QListWidget>
+#include <QComboBox>
+
 /*  INCLUDES    ============================================================ */
 //
 //
@@ -67,6 +71,23 @@ void DbViewColFilter::setInclude(bool include)
 }
 /* ========================================================================= */
 
+/* ------------------------------------------------------------------------- */
+/**
+ * Default implementation simply returns NULL, meaning that the column
+ * is not to be filtered.
+ *
+ * The ownership of the pointer is transferred o the caller.
+ *
+ * @return pointer to widget or NULL.
+ */
+QWidget *DbViewColFilter::control (int column, QWidget * parent)
+{
+    Q_UNUSED(column);
+    Q_UNUSED(parent);
+    return NULL;
+}
+/* ========================================================================= */
+
 
 
 /*  CLASS    =============================================================== */
@@ -99,6 +120,20 @@ void DbViewColFilterPattern::setPattern(const QString &pattern)
 }
 /* ========================================================================= */
 
+/* ------------------------------------------------------------------------- */
+/**
+ * The ownership of the pointer is transferred o the caller.
+ *
+ * @return pointer to widget or NULL.
+ */
+QWidget * DbViewColFilterPattern::control (int column, QWidget * parent)
+{
+    Q_UNUSED(column);
+    QTextEdit * result = new QTextEdit (parent);
+    return result;
+}
+/* ========================================================================= */
+
 /*  CLASS    =============================================================== */
 //
 //
@@ -126,6 +161,20 @@ QStringList DbViewColFilterList::values() const
 void DbViewColFilterList::setValues (const QStringList &values)
 {
     values_ = values;
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+/**
+ * The ownership of the pointer is transferred o the caller.
+ *
+ * @return pointer to widget or NULL.
+ */
+QWidget * DbViewColFilterList::control (int column, QWidget * parent)
+{
+    Q_UNUSED(column);
+    QListWidget * result = new QListWidget (parent);
+    return result;
 }
 /* ========================================================================= */
 
@@ -169,9 +218,23 @@ int DbViewColFilterChoice::current() const
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-void DbViewColFilterChoice::setCurrent(int current)
+void DbViewColFilterChoice::setCurrent (int current)
 {
     current_ = current;
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+/**
+ * The ownership of the pointer is transferred o the caller.
+ *
+ * @return pointer to widget or NULL.
+ */
+QWidget * DbViewColFilterChoice::control (int column, QWidget * parent)
+{
+    Q_UNUSED(column);
+    QComboBox * result = new QComboBox (parent);
+    return result;
 }
 /* ========================================================================= */
 

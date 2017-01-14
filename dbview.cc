@@ -16,6 +16,8 @@
 #include "dbviewcolfilter.h"
 #include "dbviewcolhdr.h"
 
+#include <QWidget>
+
 /**
  * @class DbView
  *
@@ -38,6 +40,29 @@ DbTableView::DbTableView(
     connect(ui->tableView, &QAbstractItemView::iconSizeChanged,
             this, &DbTableView::iconSizeChanged);
 
+    connect(ui->tb1, &QToolButton::triggered,
+            this, &DbTableView::goToPageLeft);
+    connect(ui->tb2, &QToolButton::triggered,
+            this, &DbTableView::goToPageCenter);
+    connect(ui->tb3, &QToolButton::triggered,
+            this, &DbTableView::goToPageRight);
+    connect(ui->tbPrev, &QToolButton::triggered,
+            this, &DbTableView::goToPreviousPage);
+    connect(ui->tbPrev, &QToolButton::triggered,
+            this, &DbTableView::goToNextPage);
+
+    connect(ui->tbPg10, &QToolButton::triggered,
+            this, &DbTableView::set10RowsPerPage);
+    connect(ui->tbPg25, &QToolButton::triggered,
+            this, &DbTableView::set25RowsPerPage);
+    connect(ui->tbPg50, &QToolButton::triggered,
+            this, &DbTableView::set50RowsPerPage);
+    connect(ui->tbPg100, &QToolButton::triggered,
+            this, &DbTableView::set100RowsPerPage);
+
+    connect(ui->tbDownload, &QToolButton::triggered,
+            this, &DbTableView::downloadAsCsv);
+
     DbViewColHdr * hdr = new DbViewColHdr (this, this);
     setHorizontalHeader (hdr);
     hdr->setSectionsClickable (true);
@@ -53,7 +78,7 @@ DbTableView::DbTableView(
 DbTableView::~DbTableView()
 {
     DBVIEW_TRACE_ENTRY;
-    eraseFilters ();
+    inmo->eraseFilters ();
     // inmo deleted by parent-son relation
     DBVIEW_TRACE_EXIT;
 }
@@ -73,7 +98,7 @@ QTableView *DbTableView::internalTableView ()
 void DbTableView::setUserModel (DbViewMo *model)
 {
     DBVIEW_TRACE_ENTRY;
-    eraseFilters ();
+    inmo->eraseFilters ();
     ui->tableView->setModel (NULL);
     inmo->setUserModel (model);
     ui->tableView->setModel (inmo);
@@ -93,7 +118,7 @@ DbViewMo *DbTableView::userModel () const
 void DbTableView::f5 () const
 {
     DBVIEW_TRACE_ENTRY;
-    inmo->reloadWithFilters (filters_);
+    inmo->reloadWithFilters ();
     DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
@@ -103,7 +128,7 @@ void DbTableView::setColumnFilter (
         int column, bool include, const QString &value)
 {
     DBVIEW_TRACE_ENTRY;
-    changeFilterData (column, new DbViewColFilterPattern (value, include));
+    inmo->setColumnFilter (column, new DbViewColFilterPattern (value, include));
     DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
@@ -113,7 +138,7 @@ void DbTableView::setColumnFilter (
         int column, bool include, const QStringList &value)
 {
     DBVIEW_TRACE_ENTRY;
-    changeFilterData (column, new DbViewColFilterList (value, include));
+    inmo->setColumnFilter (column, new DbViewColFilterList (value, include));
     DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
@@ -123,7 +148,7 @@ void DbTableView::setColumnFilterChoice (
         int column, bool include, const QStringList &value)
 {
     DBVIEW_TRACE_ENTRY;
-    changeFilterData (column, new DbViewColFilterChoice (value, -1, include));
+    inmo->setColumnFilter (column, new DbViewColFilterChoice (value, -1, include));
     DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
@@ -141,17 +166,7 @@ void DbTableView::setColumnFilterChoice (
 void DbTableView::setColumnFilter (int column, DbViewColFilter * value)
 {
     DBVIEW_TRACE_ENTRY;
-    changeFilterData (column, value);
-    DBVIEW_TRACE_EXIT;
-}
-/* ========================================================================= */
-
-/* ------------------------------------------------------------------------- */
-void DbTableView::eraseFilters ()
-{
-    DBVIEW_TRACE_ENTRY;
-    qDeleteAll (filters_);
-    filters_.clear ();
+    inmo->setColumnFilter (column, value);
     DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
@@ -160,45 +175,23 @@ void DbTableView::eraseFilters ()
 void DbTableView::setAllFilterWidgets ()
 {
     DBVIEW_TRACE_ENTRY;
-    QHeaderView *hhdr = horizontalHeader ();
+    DbViewColHdr * hhdr = static_cast<DbViewColHdr*>(horizontalHeader ());
+    hhdr->removeAllControls ();
+
+    const QList<DbViewColFilter*> & filters = inmo->colFilters ();
 
     int i_max = inmo->columnCount ();
+
     for (int i = 0; i < i_max; ++i) {
-        if ((filters_.count() <= i) || (filters_[i] == NULL)) {
-
-        } else {
-
-        }
-    }
-    DBVIEW_TRACE_EXIT;
-}
-/* ========================================================================= */
-
-/* ------------------------------------------------------------------------- */
-void DbTableView::changeFilterData (int column, DbViewColFilter *value)
-{
-    DBVIEW_TRACE_ENTRY;
-    int fcnt = filters_.count ();
-    int ccnt = inmo->columnCount ();
-    if (column > ccnt) {
-        DBVIEW_DEBUGM("Warning! Column %d outside of model "
-                      "range for columns (0-%d)",
-                      column, ccnt);
-    }
-
-    if (column == fcnt) {
-        filters_.append (value);
-    } else if (column > fcnt) {
-        do {
-             filters_.append (NULL);
-             ++fcnt;
-        } while (column > fcnt);
-        filters_.append (value);
-    } else {
-        DbViewColFilter * prev = filters_[column];
-        filters_[column] = value;
-        if (prev!= NULL) {
-            delete prev;
+        QWidget * wdg = NULL;
+        if (i < filters.count()) {
+            DbViewColFilter* filter = filters[i];
+            if (filter != NULL) {
+                wdg = filter->control (i, hhdr);
+                if (wdg != NULL) {
+                    hhdr->setControl (i, wdg);
+                }
+            }
         }
     }
     DBVIEW_TRACE_EXIT;
@@ -747,5 +740,247 @@ void DbTableView::setFrameShadow(QAbstractScrollArea::Shadow value)
 {
     ui->tableView->setFrameShadow (value);
 }
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::setPageIndex (int value)
+{
+    inmo->setPageIndex (value);
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+int DbTableView::pageIndex() const
+{
+    return inmo->pageIndex ();
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+int DbTableView::firstRowIndex () const
+{
+    return inmo->firstRowIndex ();
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::setFirstRowIndex (int value)
+{
+    inmo->setFirstRowIndex (value);
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+int DbTableView::crtRowCount () const
+{
+    return inmo->crtRowCount ();
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+int DbTableView::pageRowCount () const
+{
+    return inmo->pageRowCount ();
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::downloadAsCsv ()
+{
+
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::goToPage (int value)
+{
+    inmo->goToPage (value);
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::goToNextPage ()
+{
+    inmo->goToPage (inmo->pageIndex() + 1);
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::goToPageCenter ()
+{
+
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::goToPageLeft ()
+{
+
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::goToPageRight ()
+{
+
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::goToPreviousPage ()
+{
+    inmo->goToPage (inmo->pageIndex() - 1);
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::set100RowsPerPage ()
+{
+    setRowsPerPage (100);
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::set10RowsPerPage ()
+{
+    setRowsPerPage (10);
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::set25RowsPerPage ()
+{
+    setRowsPerPage (25);
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::set50RowsPerPage ()
+{
+    setRowsPerPage (50);
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::setRowsPerPage (int value)
+{
+
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::rowsPerPageChanged (int value)
+{
+    // keep the buttons in sync
+    bool checks[4] = {false, false, false, false};
+    switch (value) {
+    case 10: checks[0] = true; break;
+    case 25: checks[1] = true; break;
+    case 50: checks[2] = true; break;
+    case 100: checks[3] = true; break;
+    }
+    ui->tbPg10->setChecked (checks[0]);
+    ui->tbPg25->setChecked (checks[1]);
+    ui->tbPg50->setChecked (checks[2]);
+    ui->tbPg100->setChecked (checks[3]);
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+const QList<DbViewColFilter *> &DbTableView::colFilters() const
+{
+    return inmo->colFilters ();
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+bool DbTableView::hasFilter(int column) const
+{
+    return inmo->hasFilter (column);
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+static QLatin1String s_one("1");
+static QLatin1String s_two("2");
+static QLatin1String s_three("3");
+void DbTableView::pageIndexChanged (int value)
+{
+    int show_value = value + 1;
+    int pgcnt = inmo->pagesCount ();
+    Q_ASSERT(pgcnt > 0);
+
+    // set the text for the three buttons in the middle
+    // disable buttons that we cannot use
+    // show in a distinct color the current page
+    // enable/disable previous/next buttons
+    if (pgcnt == 1) {
+        ui->tb1->setText (s_one);
+        ui->tb2->setText (s_two);
+        ui->tb3->setText (s_three);
+
+        ui->tb2->setEnabled (false);
+        ui->tb3->setEnabled (false);
+        ui->tbNext->setEnabled (false);
+        ui->tbPrev->setEnabled (false);
+
+        ui->tb1->setChecked (true);
+        ui->tb2->setChecked (false);
+        ui->tb3->setChecked (false);
+    } else if (pgcnt == 2) {
+        ui->tb1->setText (s_one);
+        ui->tb2->setText (s_two);
+        ui->tb3->setText (s_three);
+
+        ui->tb2->setEnabled (true);
+        ui->tb3->setEnabled (false);
+
+        ui->tb1->setChecked (false);
+        ui->tb2->setChecked (true);
+        ui->tb3->setChecked (false);
+
+        if (value == 0) {
+            ui->tbNext->setEnabled (true);
+            ui->tbPrev->setEnabled (false);
+        } else {
+            ui->tbNext->setEnabled (false);
+            ui->tbPrev->setEnabled (true);
+        }
+    } else if (value == pgcnt-1) {
+        ui->tb1->setText (QString::number (show_value-2));
+        ui->tb2->setText (QString::number (show_value-1));
+        ui->tb3->setText (QString::number (show_value-0));
+        ui->tb2->setEnabled (true);
+        ui->tb3->setEnabled (true);
+
+        ui->tb1->setChecked (false);
+        ui->tb2->setChecked (false);
+        ui->tb3->setChecked (true);
+
+        ui->tbNext->setEnabled (false);
+        ui->tbPrev->setEnabled (true);
+    } else {
+        ui->tb1->setText (QString::number (show_value-1));
+        ui->tb2->setText (QString::number (show_value));
+        ui->tb3->setText (QString::number (show_value+1));
+        ui->tb2->setEnabled (true);
+        ui->tb3->setEnabled (true);
+
+        ui->tb1->setChecked (false);
+        ui->tb2->setChecked (true);
+        ui->tb3->setChecked (false);
+
+        if (value == 0) {
+            ui->tbNext->setEnabled (true);
+            ui->tbPrev->setEnabled (false);
+        } else {
+            ui->tbNext->setEnabled (true);
+            ui->tbPrev->setEnabled (true);
+        }
+    }
+}
+/* ========================================================================= */
+
+
 
 

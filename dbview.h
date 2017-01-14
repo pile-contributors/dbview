@@ -77,7 +77,93 @@ public:
     virtual void
     f5 () const;
 
+    //! Set the index of the current page.
+    void
+    setPageIndex (
+            int value);
 
+    //! Index of the current page.
+    int
+    pageIndex() const;
+
+    //! Index of the first row on current page.
+    int
+    firstRowIndex () const;
+
+    //! Change first row.
+    void
+    setFirstRowIndex (
+            int value);
+
+    //! Number of rows this model has.
+    int
+    crtRowCount() const;
+
+    //! Number of rows per page.
+    int
+    pageRowCount() const;
+
+
+
+public Q_SLOTS:
+
+    void
+    downloadAsCsv ();
+
+    void
+    goToPage (
+            int value);
+
+    void
+    goToNextPage ();
+
+    void
+    goToPreviousPage ();
+
+    //! Forwards the call to setRowsPerPage().
+    void
+    set10RowsPerPage ();
+
+    //! Forwards the call to setRowsPerPage().
+    void
+    set25RowsPerPage ();
+
+    //! Forwards the call to setRowsPerPage().
+    void
+    set50RowsPerPage ();
+
+    //! Forwards the call to setRowsPerPage().
+    void
+    set100RowsPerPage ();
+
+    //! Change the number of rows in a page.
+    void
+    setRowsPerPage (
+            int value);
+
+private Q_SLOTS:
+
+    //! Handles signals from the left-most page number button.
+    void
+    goToPageLeft ();
+
+    //! Handles signals from the center page number button.
+    void
+    goToPageCenter ();
+
+    //! Handles signals from the right-most page number button.
+    void
+    goToPageRight ();
+
+    //! We're informed that the index of current page changed.
+    void
+    pageIndexChanged (
+        int value);
+
+    //! We're informed that the number of rows in each page changed.
+    void
+    rowsPerPageChanged (
+        int value);
 
 
     /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
@@ -91,21 +177,16 @@ public:
      */
     ///@{
 
+public:
+
     //! Get the filters to be used with the model.
     const QList<DbViewColFilter*> &
-    colFilters () const {
-        return filters_;
-    }
+    colFilters () const;
 
     //! Tell if a column has a filter installed.
     bool
     hasFilter (
-            int column) const {
-        if (filters_.count() <= column)
-            return false;
-        return (filters_[column] != NULL);
-    }
-
+            int column) const;
 
     //! Filter contents in a column using a simple string filtering.
     virtual void
@@ -136,19 +217,13 @@ public:
 
 private:
 
-    //! Delete all filters.
-    void
-    eraseFilters ();
-
     //! Update the header to show proper widgets.
     void
     setAllFilterWidgets ();
 
-    //! Change a filter to the one specified in argument.
+    //! Remove any widgets that we have set fopr header.
     void
-    changeFilterData (
-            int column,
-            DbViewColFilter * value);
+    clearAllFilterWidgets ();
 
     ///@}
     /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
@@ -352,7 +427,6 @@ protected:
 private:
     Ui::DbView *ui;
     impl::InMo * inmo;
-    QList<DbViewColFilter*> filters_;
 };
 
 #endif // GUARD_DBTABLEVIEW_H_INCLUDE

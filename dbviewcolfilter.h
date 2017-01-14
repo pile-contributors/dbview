@@ -35,7 +35,9 @@
 //
 /*  DEFINITIONS    --------------------------------------------------------- */
 
-
+QT_BEGIN_NAMESPACE
+class QWidget;
+QT_END_NAMESPACE
 
 /*  DEFINITIONS    ========================================================= */
 //
@@ -73,15 +75,38 @@ protected:
 
 public:
 
-    //! Constructor.
+    //! Default Constructor.
     DbViewColFilter (
             bool include = true);
+
+    //! Copy constructor.
+    DbViewColFilter (
+            const DbViewColFilter & other) {
+        include_ = other.include_;
+    }
 
     //! destructor
     virtual ~DbViewColFilter();
 
-    bool include() const;
-    void setInclude(bool include);
+    //! Is this an including filter or an exlcluding one?
+    bool
+    include() const;
+
+
+    //! Is this an including filter or an exlcluding one?
+    void
+    setInclude (
+            bool include);
+
+    //! The widget to be used for filtering the content of the table.
+    virtual QWidget *
+    control (
+            int column,
+            QWidget *parent);
+
+    //! Create an exact duplicate of this one.
+    virtual DbViewColFilter *
+    clone() const = 0;
 
 protected:
 
@@ -136,8 +161,29 @@ public:
             const QString & value = QString(),
             bool include = true);
 
+    //! Copy constructor.
+    DbViewColFilterPattern (
+            const DbViewColFilterPattern & other) :
+        DbViewColFilter (other)
+    {
+        pattern_ = other.pattern_;
+    }
+
+    //! The widget to be used for filtering the content of the table.
+    virtual QWidget *
+    control (
+            int column,
+            QWidget *parent);
+
     QString pattern() const;
     void setPattern(const QString &pattern);
+
+    //! Create an exact duplicate of this one.
+    virtual DbViewColFilter *
+    clone() const {
+        return new DbViewColFilterPattern (*this);
+    }
+
 
 protected:
 
@@ -191,8 +237,29 @@ public:
             const QStringList & value = QStringList(),
             bool include = true);
 
+    //! Copy constructor.
+    DbViewColFilterList (
+            const DbViewColFilterList & other) :
+        DbViewColFilter (other)
+    {
+        values_ = other.values_;
+    }
+
+    //! The widget to be used for filtering the content of the table.
+    virtual QWidget *
+    control (
+            int column,
+            QWidget *parent);
+
     QStringList values() const;
     void setValues(const QStringList &values);
+
+    //! Create an exact duplicate of this one.
+    virtual DbViewColFilter *
+    clone() const {
+        return new DbViewColFilterList (*this);
+    }
+
 
 protected:
 
@@ -248,11 +315,32 @@ public:
             int current = -1,
             bool include = true);
 
+    //! Copy constructor.
+    DbViewColFilterChoice (
+            const DbViewColFilterChoice & other) :
+        DbViewColFilter (other)
+    {
+        values_ = other.values_;
+        current_ = other.current_;
+    }
+
+    //! The widget to be used for filtering the content of the table.
+    virtual QWidget *
+    control (
+            int column,
+            QWidget *parent);
+
     QStringList values() const;
     void setValues(const QStringList &values);
 
     int current() const;
     void setCurrent(int current);
+
+    //! Create an exact duplicate of this one.
+    virtual DbViewColFilter *
+    clone() const {
+        return new DbViewColFilterChoice (*this);
+    }
 
 protected:
 
@@ -326,6 +414,15 @@ public:
         cmp_(relation)
     {}
 
+    //! Copy constructor.
+    DbViewColFilterNumber (
+            const DbViewColFilterNumber & other) :
+        DbViewColFilter (other)
+    {
+        value_ = other.value_;
+        cmp_ = other.cmp_;
+    }
+
     //! Compare based on internal comparation rule and include/exclude.
     bool compare (T other) {
         switch (cmp_) {
@@ -338,6 +435,13 @@ public:
         }
         return false;
     }
+
+    //! Create an exact duplicate of this one.
+    virtual DbViewColFilter *
+    clone() const {
+        return new DbViewColFilterNumber<T> (*this);
+    }
+
 
 
 protected:

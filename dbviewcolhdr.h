@@ -96,6 +96,10 @@ public:
         return (controls_[column] != NULL);
     }
 
+    //! Remove the controls for all columns.
+    void
+    removeAllControls ();
+
 
 protected:
 
