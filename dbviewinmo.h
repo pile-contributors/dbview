@@ -2,6 +2,7 @@
 #define DBVIEWINMO_H
 
 #include <QAbstractTableModel>
+#include <dbview/dbviewconfig.h>
 
 class DbViewMo;
 class DbViewColFilter;
@@ -32,16 +33,23 @@ public:
     setUserModel (
             DbViewMo *model);
 
+    //! Total numebr of records in underlying model.
+    int
+    totalRowCount () const;
+
+
     QVariant
     headerData (
             int section,
             Qt::Orientation orientation,
             int role = Qt::DisplayRole) const override;
 
+    //! This only returns the number of rows in current page
     int
     rowCount (
             const QModelIndex &parent = QModelIndex()) const override;
 
+    //! The number of rows in the model.
     int
     columnCount (
             const QModelIndex &parent = QModelIndex()) const override;
@@ -64,7 +72,7 @@ public:
     //! Number of rows per page.
     int
     pageRowCount() const {
-        return page_row_count_;
+        return cfg_.max_rows;
     }
 
     //! Set the number of rows per page.
@@ -77,7 +85,7 @@ public:
     justSetPageRowCount (
             int value) {
         Q_ASSERT(value > 0);
-        page_row_count_ = value;
+        cfg_.max_rows = value;
     }
 
     //! Set the model to provide a certain page.
@@ -108,7 +116,7 @@ public:
     //! Index of the first row on current page.
     int
     firstRowIndex () const {
-        return first_row_index_;
+        return cfg_.first_row;
     }
 
     //! Change the index of the first row on current page.
@@ -122,7 +130,11 @@ public:
         return pages_count_;
     }
 
-
+    //! We are requested to sort the model.
+    virtual void
+    sort (
+            int column,
+            Qt::SortOrder order = Qt::AscendingOrder);
 
     /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
     /** @name Filters
@@ -140,16 +152,16 @@ public:
     //! Get the filters to be used with the model.
     const QList<DbViewColFilter*> &
     colFilters () const {
-        return filters_;
+        return cfg_.filters;
     }
 
     //! Tell if a column has a filter installed.
     bool
     hasFilter (
             int column) const {
-        if (filters_.count() <= column)
+        if (cfg_.filters.count() <= column)
             return false;
-        return (filters_[column] != NULL);
+        return (cfg_.filters[column] != NULL);
     }
 
     //! Filter contents in a column using a custom filtering.
@@ -186,16 +198,11 @@ private:
     void connectModel (DbViewMo *model);
     void disconnectModel ();
 
-
     DbViewMo * user_model_; /**< Changed by the user. */
-    int page_row_count_; /**< Changed by the user. */
-    int page_index_; /**< Changed by the user; zero-based. */
-    QList<DbViewColFilter*> filters_; /**< The list of filters (expands as required). */
-    bool separate_thread_; /**< aquiure data using a separate thread */
-    int ms_timeout_; /**< Timeout for the separate thread in miliseconds. */
+    DbViewConfig cfg_;
 
+    int page_index_; /**< Changed by the user; zero-based. */
     int crt_row_count_; /**< derived from underlying model */
-    int first_row_index_; /**< derived from page_index_; zero-based */
     int pages_count_; /**< derived from underlying model */
 };
 } // namespace impl

@@ -19,14 +19,19 @@ macro    (dbviewInit
     # compose the list of headers and sources
     set(DBVIEW_HEADERS
         "dbview.h"
+        "dbview-globals.h"
         "dbviewcolhdr.h"
         "dbviewcolfilter.h"
+        "dbviewmosi.h"
+        "dbviewconfig.h"
         "dbviewmo.h")
     set(DBVIEW_SOURCES
         "dbview.cc"
         "dbviewmo.cc"
         "dbviewcolfilter.cc"
         "dbviewcolhdr.cc"
+        "dbviewmosi.cc"
+        "dbviewconfig.cc"
         "dbviewinmo.cc")
     set(DBVIEW_UIS
         "dbview.ui")

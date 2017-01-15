@@ -22,7 +22,9 @@
 /*  INCLUDES    ------------------------------------------------------------ */
 
 #include "dbviewcolfilter.h"
+#include "dbview-private.h"
 
+#include <qglobal.h>
 #include <QTextEdit>
 #include <QListWidget>
 #include <QComboBox>
@@ -88,7 +90,41 @@ QWidget *DbViewColFilter::control (int column, QWidget * parent)
 }
 /* ========================================================================= */
 
+/* ------------------------------------------------------------------------- */
+QList<DbViewColFilter *> DbViewColFilter::clone (
+        const QList<DbViewColFilter *> &filters)
+{
+    QList<DbViewColFilter*> result;
+    foreach(DbViewColFilter* flt, filters) {
+        if (flt == NULL) {
+            result.append (NULL);
+        } else {
+            result.append (flt->clone ());
+        }
+    }
+    return result;
+}
+/* ========================================================================= */
 
+/* ------------------------------------------------------------------------- */
+bool DbViewColFilter::acceptsRow (
+        const QList<DbViewColFilter *> &filters,
+        QAbstractItemModel *model, int row)
+{
+    int i_max = qMin(model->columnCount (), filters.length ());
+    QModelIndex index;
+    for (int i = 0; i < i_max; ++i) {
+        DbViewColFilter* filter = filters[i];
+        if (filter == NULL)
+            continue;
+        index = model->index (row, i);
+        if (!filter->acceptsData (index.data (Qt::EditRole))) {
+            return false;
+        }
+    }
+    return true;
+}
+/* ========================================================================= */
 
 /*  CLASS    =============================================================== */
 //
@@ -134,6 +170,14 @@ QWidget * DbViewColFilterPattern::control (int column, QWidget * parent)
 }
 /* ========================================================================= */
 
+/* ------------------------------------------------------------------------- */
+bool DbViewColFilterPattern::acceptsData (const QVariant &data) const
+{
+    UNIMPLEMENTED_TRAP;
+    return true;
+}
+/* ========================================================================= */
+
 /*  CLASS    =============================================================== */
 //
 //
@@ -175,6 +219,14 @@ QWidget * DbViewColFilterList::control (int column, QWidget * parent)
     Q_UNUSED(column);
     QListWidget * result = new QListWidget (parent);
     return result;
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+bool DbViewColFilterList::acceptsData (const QVariant &data) const
+{
+    UNIMPLEMENTED_TRAP;
+    return true;
 }
 /* ========================================================================= */
 
@@ -235,6 +287,14 @@ QWidget * DbViewColFilterChoice::control (int column, QWidget * parent)
     Q_UNUSED(column);
     QComboBox * result = new QComboBox (parent);
     return result;
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+bool DbViewColFilterChoice::acceptsData (const QVariant &data) const
+{
+    UNIMPLEMENTED_TRAP;
+    return true;
 }
 /* ========================================================================= */
 

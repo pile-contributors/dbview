@@ -1,11 +1,11 @@
 /* ========================================================================= */
 /* ------------------------------------------------------------------------- */
 /*!
-  \file         dbviewmo.cc
+  \file         dbviewconfig.cc
   \date         January 2017
   \author       Nicu Tofan
 
-  \brief        Contains the implementation for DbViewMo class.
+  \brief        Contains the implementation for DbViewConfig class.
 
 *//*
 
@@ -21,9 +21,9 @@
 //
 /*  INCLUDES    ------------------------------------------------------------ */
 
-#include "dbviewmo.h"
-
-#include <QAbstractItemModel>
+#include "dbviewconfig.h"
+#include "dbview-private.h"
+#include "dbviewcolfilter.h"
 
 /*  INCLUDES    ============================================================ */
 //
@@ -41,69 +41,78 @@
 /*  CLASS    --------------------------------------------------------------- */
 
 /* ------------------------------------------------------------------------- */
-DbViewMo::DbViewMo ()
+DbViewConfig::DbViewConfig () :
+    first_row(0),
+    max_rows(10),
+    sort_column(-1),
+    sort_order(Qt::AscendingOrder),
+    filters(),
+    ms_timeout(2000),
+    parallel(false)
 {
-
+    DBVIEW_TRACE_ENTRY;
+    DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-DbViewMo::~DbViewMo()
+DbViewConfig::DbViewConfig (
+        const DbViewConfig & other) :
+    first_row(other.first_row),
+    max_rows(other.max_rows),
+    sort_column(other.sort_column),
+    sort_order(other.sort_order),
+    filters(),
+    ms_timeout(other.ms_timeout),
+    parallel(other.parallel)
 {
-
+    DBVIEW_TRACE_ENTRY;
+    if (parallel) {
+        filters = other.filters;
+    } else {
+        filters = DbViewColFilter::clone (other.filters);
+    }
+    DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-/**
- * Default implementation simply forwards the request to
- * underlying model.
- *
- * @param display_row index of the row inside current page
- * @param true_row index of the row in the whole model
- * @param column index of the column
- * @param role the role
- * @return appropriate value
- */
-QVariant DbViewMo::data (
-        int display_row, int true_row, int column, int role) const
+DbViewConfig::~DbViewConfig()
 {
-    Q_UNUSED(display_row);
-    const QAbstractItemModel * mm = qtModelC ();
-
-    return mm->data (mm->index (true_row, column), role);
+    DBVIEW_TRACE_ENTRY;
+    eraseFilters ();
+    DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-/**
- * Default implementation simply forwards the request to
- * underlying model.
- *
- * @param display_row index of the row inside current page
- * @param true_row index of the row in the whole model
- * @param role the role
- * @return appropriate value
- */
-QVariant DbViewMo::rowHeaderData (
-        int display_row, int true_row, int role) const
+void DbViewConfig::straightCopy (const DbViewConfig &other)
 {
-    Q_UNUSED(display_row);
-    return qtModelC()->headerData (
-                true_row, Qt::Vertical, role);
+    first_row = other.first_row;
+    max_rows = other.max_rows;
+    sort_column = other.sort_column;
+    sort_order = other.sort_order;
+    filters = other.filters;
+    ms_timeout = other.ms_timeout;
+    parallel = other.parallel;
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-/**
- * The entries in the list may be: strings, string lists
- *
- * @param filters the list of values to filter the model by,
- *                 one for each column
- */
-void DbViewMo::reloadWithFilters (DbViewConfig cfg)
+void DbViewConfig::move (DbViewConfig &other)
 {
+    straightCopy (other);
+    other.filters.clear();
+}
+/* ========================================================================= */
 
+/* ------------------------------------------------------------------------- */
+void DbViewConfig::eraseFilters ()
+{
+    DBVIEW_TRACE_ENTRY;
+    qDeleteAll (filters);
+    filters.clear ();
+    DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
 

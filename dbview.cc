@@ -18,6 +18,12 @@
 
 #include <QWidget>
 
+static QLatin1String s_one("1");
+static QLatin1String s_two("2");
+static QLatin1String s_three("3");
+static const char * pgidx = "pgidx";
+
+
 /**
  * @class DbView
  *
@@ -40,32 +46,37 @@ DbTableView::DbTableView(
     connect(ui->tableView, &QAbstractItemView::iconSizeChanged,
             this, &DbTableView::iconSizeChanged);
 
-    connect(ui->tb1, &QToolButton::triggered,
+    connect(inmo, &QAbstractItemModel::modelReset,
+            this, &DbTableView::modelWasResetted);
+
+    connect(ui->tb1, &QToolButton::clicked,
             this, &DbTableView::goToPageLeft);
-    connect(ui->tb2, &QToolButton::triggered,
+    connect(ui->tb2, &QToolButton::clicked,
             this, &DbTableView::goToPageCenter);
-    connect(ui->tb3, &QToolButton::triggered,
+    connect(ui->tb3, &QToolButton::clicked,
             this, &DbTableView::goToPageRight);
-    connect(ui->tbPrev, &QToolButton::triggered,
+    connect(ui->tbPrev, &QToolButton::clicked,
             this, &DbTableView::goToPreviousPage);
-    connect(ui->tbPrev, &QToolButton::triggered,
+    connect(ui->tbNext, &QToolButton::clicked,
             this, &DbTableView::goToNextPage);
 
-    connect(ui->tbPg10, &QToolButton::triggered,
+    connect(ui->tbPg10, &QToolButton::clicked,
             this, &DbTableView::set10RowsPerPage);
-    connect(ui->tbPg25, &QToolButton::triggered,
+    connect(ui->tbPg25, &QToolButton::clicked,
             this, &DbTableView::set25RowsPerPage);
-    connect(ui->tbPg50, &QToolButton::triggered,
+    connect(ui->tbPg50, &QToolButton::clicked,
             this, &DbTableView::set50RowsPerPage);
-    connect(ui->tbPg100, &QToolButton::triggered,
+    connect(ui->tbPg100, &QToolButton::clicked,
             this, &DbTableView::set100RowsPerPage);
 
-    connect(ui->tbDownload, &QToolButton::triggered,
+    connect(ui->tbDownload, &QToolButton::clicked,
             this, &DbTableView::downloadAsCsv);
 
     DbViewColHdr * hdr = new DbViewColHdr (this, this);
     setHorizontalHeader (hdr);
     hdr->setSectionsClickable (true);
+
+    setSortingEnabled (true);
 
     DBVIEW_TRACE_EXIT;
 }
@@ -103,6 +114,7 @@ void DbTableView::setUserModel (DbViewMo *model)
     inmo->setUserModel (model);
     ui->tableView->setModel (inmo);
     setAllFilterWidgets ();
+    pageIndexChanged (0);
     DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
@@ -808,21 +820,27 @@ void DbTableView::goToNextPage ()
 /* ------------------------------------------------------------------------- */
 void DbTableView::goToPageCenter ()
 {
-
+    goToPageLeft ();
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
 void DbTableView::goToPageLeft ()
 {
-
+    QToolButton* tb = qobject_cast<QToolButton*>(sender());
+    if (tb == NULL)
+        return;
+    QVariant prop = tb->property (pgidx);
+    if (prop.isNull())
+        return;
+    goToPage (prop.toInt());
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
 void DbTableView::goToPageRight ()
 {
-
+    goToPageLeft ();
 }
 /* ========================================================================= */
 
@@ -836,35 +854,35 @@ void DbTableView::goToPreviousPage ()
 /* ------------------------------------------------------------------------- */
 void DbTableView::set100RowsPerPage ()
 {
-    setRowsPerPage (100);
+    inmo->setPageRowCount (100);
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
 void DbTableView::set10RowsPerPage ()
 {
-    setRowsPerPage (10);
+    inmo->setPageRowCount (10);
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
 void DbTableView::set25RowsPerPage ()
 {
-    setRowsPerPage (25);
+    inmo->setPageRowCount (25);
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
 void DbTableView::set50RowsPerPage ()
 {
-    setRowsPerPage (50);
+    inmo->setPageRowCount (50);
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
 void DbTableView::setRowsPerPage (int value)
 {
-
+    inmo->setPageRowCount (value);
 }
 /* ========================================================================= */
 
@@ -887,6 +905,16 @@ void DbTableView::rowsPerPageChanged (int value)
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
+void DbTableView::modelWasResetted()
+{
+    pageIndexChanged (inmo->pageIndex());
+    rowsPerPageChanged (inmo->pageRowCount ());
+    ui->labelRecords->setText (
+                QObject::tr("%1 records").arg (inmo->totalRowCount ()));
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
 const QList<DbViewColFilter *> &DbTableView::colFilters() const
 {
     return inmo->colFilters ();
@@ -901,9 +929,6 @@ bool DbTableView::hasFilter(int column) const
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-static QLatin1String s_one("1");
-static QLatin1String s_two("2");
-static QLatin1String s_three("3");
 void DbTableView::pageIndexChanged (int value)
 {
     int show_value = value + 1;
@@ -918,6 +943,9 @@ void DbTableView::pageIndexChanged (int value)
         ui->tb1->setText (s_one);
         ui->tb2->setText (s_two);
         ui->tb3->setText (s_three);
+        ui->tb1->setProperty (pgidx, 0);
+        ui->tb2->setProperty (pgidx, 1);
+        ui->tb3->setProperty (pgidx, 2);
 
         ui->tb2->setEnabled (false);
         ui->tb3->setEnabled (false);
@@ -931,25 +959,38 @@ void DbTableView::pageIndexChanged (int value)
         ui->tb1->setText (s_one);
         ui->tb2->setText (s_two);
         ui->tb3->setText (s_three);
+        ui->tb1->setProperty (pgidx, 0);
+        ui->tb2->setProperty (pgidx, 1);
+        ui->tb3->setProperty (pgidx, 2);
 
         ui->tb2->setEnabled (true);
         ui->tb3->setEnabled (false);
 
         ui->tb1->setChecked (false);
         ui->tb2->setChecked (true);
-        ui->tb3->setChecked (false);
 
         if (value == 0) {
+            ui->tb1->setChecked (true);
+            ui->tb2->setChecked (false);
+
             ui->tbNext->setEnabled (true);
             ui->tbPrev->setEnabled (false);
         } else {
+            ui->tb1->setChecked (false);
+            ui->tb2->setChecked (true);
+
             ui->tbNext->setEnabled (false);
             ui->tbPrev->setEnabled (true);
         }
+        ui->tb3->setChecked (false);
     } else if (value == pgcnt-1) {
         ui->tb1->setText (QString::number (show_value-2));
         ui->tb2->setText (QString::number (show_value-1));
         ui->tb3->setText (QString::number (show_value-0));
+        ui->tb1->setProperty (pgidx, value-2);
+        ui->tb2->setProperty (pgidx, value-1);
+        ui->tb3->setProperty (pgidx, value);
+
         ui->tb2->setEnabled (true);
         ui->tb3->setEnabled (true);
 
@@ -960,23 +1001,38 @@ void DbTableView::pageIndexChanged (int value)
         ui->tbNext->setEnabled (false);
         ui->tbPrev->setEnabled (true);
     } else {
-        ui->tb1->setText (QString::number (show_value-1));
-        ui->tb2->setText (QString::number (show_value));
-        ui->tb3->setText (QString::number (show_value+1));
+
         ui->tb2->setEnabled (true);
         ui->tb3->setEnabled (true);
 
-        ui->tb1->setChecked (false);
-        ui->tb2->setChecked (true);
-        ui->tb3->setChecked (false);
-
         if (value == 0) {
-            ui->tbNext->setEnabled (true);
+            ui->tb1->setText (s_one);
+            ui->tb2->setText (s_two);
+            ui->tb3->setText (s_three);
+            ui->tb1->setProperty (pgidx, 0);
+            ui->tb2->setProperty (pgidx, 1);
+            ui->tb3->setProperty (pgidx, 2);
+
             ui->tbPrev->setEnabled (false);
+
+            ui->tb1->setChecked (true);
+            ui->tb2->setChecked (false);
+            ui->tb3->setChecked (false);
         } else {
-            ui->tbNext->setEnabled (true);
+            ui->tb1->setText (QString::number (show_value-1));
+            ui->tb2->setText (QString::number (show_value));
+            ui->tb3->setText (QString::number (show_value+1));
+            ui->tb1->setProperty (pgidx, value-1);
+            ui->tb2->setProperty (pgidx, value);
+            ui->tb3->setProperty (pgidx, value+1);
+
             ui->tbPrev->setEnabled (true);
+
+            ui->tb1->setChecked (false);
+            ui->tb2->setChecked (true);
+            ui->tb3->setChecked (false);
         }
+        ui->tbNext->setEnabled (true);
     }
 }
 /* ========================================================================= */

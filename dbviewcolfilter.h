@@ -37,6 +37,8 @@
 
 QT_BEGIN_NAMESPACE
 class QWidget;
+class QVariant;
+class QAbstractItemModel;
 QT_END_NAMESPACE
 
 /*  DEFINITIONS    ========================================================= */
@@ -108,9 +110,32 @@ public:
     virtual DbViewColFilter *
     clone() const = 0;
 
+    //! Tell if this filter accepts provided piece of data.
+    virtual bool
+    acceptsData (
+            const QVariant & data) const = 0;
+
+
+
 protected:
 
 private:
+
+
+
+public:
+
+    //! Clones all filters in the list.
+    static QList<DbViewColFilter*>
+    clone (
+            const QList<DbViewColFilter*> &filters);
+
+    //! For a row in a model tell if all filters accept it.
+    static bool
+    acceptsRow (
+            const QList<DbViewColFilter*> &filters,
+            QAbstractItemModel * model,
+            int row);
 
 
     /*  FUNCTIONS    ======================================================= */
@@ -183,6 +208,11 @@ public:
     clone() const {
         return new DbViewColFilterPattern (*this);
     }
+
+    //! Tell if this filter accepts provided piece of data.
+    virtual bool
+    acceptsData (
+            const QVariant & data) const;
 
 
 protected:
@@ -259,6 +289,11 @@ public:
     clone() const {
         return new DbViewColFilterList (*this);
     }
+
+    //! Tell if this filter accepts provided piece of data.
+    virtual bool
+    acceptsData (
+            const QVariant & data) const;
 
 
 protected:
@@ -341,6 +376,11 @@ public:
     clone() const {
         return new DbViewColFilterChoice (*this);
     }
+
+    //! Tell if this filter accepts provided piece of data.
+    virtual bool
+    acceptsData (
+            const QVariant & data) const;
 
 protected:
 
@@ -442,7 +482,14 @@ public:
         return new DbViewColFilterNumber<T> (*this);
     }
 
+    //! Tell if this filter accepts provided piece of data.
+    virtual bool
+    acceptsData (
+            const QVariant & data) const {
+        Q_ASSERT(false);
 
+        return true;
+    }
 
 protected:
 

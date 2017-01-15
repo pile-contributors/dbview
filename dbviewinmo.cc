@@ -1,6 +1,7 @@
 #include "dbviewinmo.h"
 #include "dbviewmo.h"
 #include "dbviewcolfilter.h"
+#include "dbview-globals.h"
 
 #include <QtConcurrent\QtConcurrent>
 
@@ -11,13 +12,8 @@ using namespace impl;
 InMo::InMo(QObject *parent) :
     QAbstractTableModel(parent),
     user_model_(NULL),
-    page_row_count_(10),
     page_index_(0),
-    filters_(),
-    separate_thread_(false),
-    ms_timeout_(2000),
     crt_row_count_(0),
-    first_row_index_(0),
     pages_count_(1)
 {
 }
@@ -35,6 +31,13 @@ void InMo::setUserModel(DbViewMo *model)
         connectModel (model);
     }
     endResetModel();
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+int InMo::totalRowCount() const
+{
+    return user_model_->qtModelC ()->rowCount();
 }
 /* ========================================================================= */
 
@@ -162,17 +165,15 @@ void InMo::disconnectModel ()
 void InMo::setPageRowCount (int value)
 {
     Q_ASSERT(value > 0);
-    beginResetModel ();
-    page_row_count_ = value;
-    reloadCachedData ();
-    endResetModel ();
+    cfg_.max_rows = value;
+    setFirstRowIndex(cfg_.first_row);
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
 void InMo::setPageIndex (int value)
 {
-    Q_ASSERT(value > 0);
+    Q_ASSERT(value >= 0);
     beginResetModel ();
     page_index_ = value;
     reloadCachedData ();
@@ -185,26 +186,35 @@ void InMo::setFirstRowIndex (int value)
 {
     if (user_model_ == NULL)
         return;
-    int pg = value / page_row_count_;
+    int pg = value / cfg_.max_rows;
     setPageIndex (pg);
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void InMo::sort (int column, Qt::SortOrder order)
+{
+    cfg_.sort_column = column;
+    cfg_.sort_order = order;
+    reloadWithFilters ();
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
 void InMo::setColumnFilter (int column, DbViewColFilter *value)
 {
-    int fcnt = filters_.count ();
+    int fcnt = cfg_.filters.count ();
     if (column == fcnt) {
-        filters_.append (value);
+        cfg_.filters.append (value);
     } else if (column > fcnt) {
         do {
-             filters_.append (NULL);
+             cfg_.filters.append (NULL);
              ++fcnt;
         } while (column > fcnt);
-        filters_.append (value);
+        cfg_.filters.append (value);
     } else {
-        DbViewColFilter * prev = filters_[column];
-        filters_[column] = value;
+        DbViewColFilter * prev = cfg_.filters[column];
+        cfg_.filters[column] = value;
         if (prev != NULL) {
             delete prev;
         }
@@ -218,15 +228,15 @@ void InMo::reloadCachedData ()
     if (user_model_ == NULL) {
         page_index_ = 0;
         crt_row_count_ = 0;
-        first_row_index_ = 0;
+        cfg_.first_row = 0;
         pages_count_ = 1;
     } else {
         QAbstractItemModel * mm = user_model_->qtModel ();
         int tot_row_count = mm->rowCount();
-        crt_row_count_ = qMin(page_row_count_, tot_row_count);
-        first_row_index_ = page_row_count_ * page_index_;
-        pages_count_ = tot_row_count / page_row_count_;
-        int displ = pages_count_ * page_row_count_;
+        crt_row_count_ = qMin(cfg_.max_rows, tot_row_count);
+        cfg_.first_row = cfg_.max_rows * page_index_;
+        pages_count_ = tot_row_count / cfg_.max_rows;
+        int displ = pages_count_ * cfg_.max_rows;
         if (displ < tot_row_count)
             ++pages_count_;
     }
@@ -246,7 +256,7 @@ QVariant InMo::headerData (
         return user_model_->qtModel ()->headerData (section, orientation, role);
     }
 
-    int row = section + first_row_index_;
+    int row = section + cfg_.first_row;
     switch (role) {
     case Qt::DisplayRole: {
         return QString::number (row+1);
@@ -289,7 +299,7 @@ QVariant InMo::data (const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    int row = index.row() + first_row_index_;
+    int row = index.row() + cfg_.first_row;
     return user_model_->data (index.row(), row, index.column(), role);
 }
 /* ========================================================================= */
@@ -297,48 +307,41 @@ QVariant InMo::data (const QModelIndex &index, int role) const
 /* ------------------------------------------------------------------------- */
 void InMo::reloadWithFilters ()
 {
-    if (separate_thread_) {
-        QList<DbViewColFilter*> temp_filters_;
-        foreach(DbViewColFilter* flt, filters_) {
-            if (flt == NULL) {
-                temp_filters_.append (NULL);
-            } else {
-                temp_filters_.append (flt->clone ());
-            }
-        }
+    beginResetModel();
+    if (cfg_.parallel) {
         QtConcurrent::run (
-                    user_model_, &DbViewMo::reloadWithFilters,
-                    first_row_index_, page_row_count_, filters_,
-                    ms_timeout_);
+                    user_model_, &DbViewMo::reloadWithFilters, cfg_);
     } else {
-        user_model_->reloadWithFilters (
-                    first_row_index_, page_row_count_, filters_,
-                    ms_timeout_);
+        user_model_->reloadWithFilters (cfg_);
     }
+    endResetModel();
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
 void InMo::eraseFilters ()
 {
-    qDeleteAll (filters_);
-    filters_.clear ();
+    qDeleteAll (cfg_.filters);
+    cfg_.filters.clear ();
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
 void InMo::goToPage (int value)
 {
-    int first_row = value * page_row_count_;
+    page_index_ = value;
+    cfg_.first_row = value * cfg_.max_rows;
     int tot_rows = user_model_->qtModel ()->rowCount ();
 
-    if (first_row >= tot_rows) {
-        first_row = (pages_count_ - 1) * page_row_count_;
+    if (cfg_.first_row >= tot_rows) {
+        page_index_ = pages_count_ - 1;
+        cfg_.first_row = page_index_ * cfg_.max_rows;
     }
-    if (first_row < 0) {
-        first_row = 0;
+    if (cfg_.first_row < 0) {
+        cfg_.first_row = 0;
+        page_index_ = 0;
     }
-    user_model_->reloadWithFilters (first_row, page_row_count_, filters_);
+    reloadWithFilters ();
 }
 /* ========================================================================= */
 

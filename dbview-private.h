@@ -34,4 +34,12 @@
 static inline void black_hole (...)
 {}
 
+#ifndef UNIMPLEMENTED
+#   define UNIMPLEMENTED qWarning("Unimplemented code: %s", Q_FUNC_INFO);
+#endif
+
+#ifndef UNIMPLEMENTED_TRAP
+#   define UNIMPLEMENTED_TRAP qWarning("Unimplemented code: %s", Q_FUNC_INFO); Q_ASSERT(false);
+#endif
+
 #endif // GUARD_DBVIEW_PRIVATE_H_INCLUDE

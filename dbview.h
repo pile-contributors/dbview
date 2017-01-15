@@ -166,6 +166,9 @@ private Q_SLOTS:
         int value);
 
 
+    void
+    modelWasResetted ();
+
     /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
     /** @name Filters
      * This section deals with filters that may be applied

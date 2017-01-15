@@ -1,11 +1,11 @@
 /* ========================================================================= */
 /* ------------------------------------------------------------------------- */
 /*!
-  \file         dbviewmo.h
+  \file         dbviewmosi.h
   \date         January 2017
   \author       Nicu Tofan
 
-  \brief        Contains the definition for DbViewMo class.
+  \brief        Contains the definition for DbViewMoSi class.
 
 *//*
 
@@ -15,18 +15,16 @@
 */
 /* ------------------------------------------------------------------------- */
 /* ========================================================================= */
-#ifndef DBVIEWMO_H
-#define DBVIEWMO_H
+#ifndef DBVIEWMOSI_H
+#define DBVIEWMOSI_H
 //
 //
 //
 //
 /*  INCLUDES    ------------------------------------------------------------ */
 
-#include <dbview/dbview-config.h>
-#include <dbview/dbviewconfig.h>
-#include <QtGlobal>
-#include <QVariantList>
+#include <dbview/dbviewmo.h>
+#include <QSortFilterProxyModel>
 
 /*  INCLUDES    ============================================================ */
 //
@@ -35,10 +33,7 @@
 //
 /*  DEFINITIONS    --------------------------------------------------------- */
 
-QT_BEGIN_NAMESPACE
-class QAbstractItemModel;
-class DbViewColFilter;
-QT_END_NAMESPACE
+
 
 /*  DEFINITIONS    ========================================================= */
 //
@@ -47,8 +42,9 @@ QT_END_NAMESPACE
 //
 /*  CLASS    --------------------------------------------------------------- */
 
-//! The interface for a model used in DbView and some helpers.
-class DBVIEW_EXPORT DbViewMo {
+//! Allows pagination, sorting and filtering.
+class DBVIEW_EXPORT DbViewMoSi : public QSortFilterProxyModel, public DbViewMo
+{
     //
     //
     //
@@ -64,8 +60,8 @@ class DBVIEW_EXPORT DbViewMo {
     /*  DATA    ------------------------------------------------------------ */
 
 private:
-    int first_row_;
-    int max_rows_;
+
+    DbViewConfig cfg_;
 
     /*  DATA    ============================================================ */
     //
@@ -77,49 +73,33 @@ private:
 public:
 
     //! Constructor.
-    DbViewMo();
+    DbViewMoSi (
+            QAbstractItemModel * user_model=NULL,
+            QObject * parent = NULL);
 
     //! destructor
-    virtual ~DbViewMo();
-
-
-    /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
-    /** @name Interface
-     * Methods that need to be implemented by the
-     * subclass.
-     */
-    ///@{
+    virtual ~DbViewMoSi();
 
     //! The model we're ghosting.
     virtual const QAbstractItemModel *
-    qtModelC () const = 0;
+    qtModelC () const {
+        return this;
+    }
 
     //! The model we're ghosting.
     virtual QAbstractItemModel *
-    qtModel () = 0;
-
-    //! Get the data.
-    virtual QVariant
-    data (
-            int display_row,
-            int true_row,
-            int column,
-            int role) const;
-
-    //! Get the header data; never display or edit roles.
-    virtual QVariant
-    rowHeaderData (
-            int display_row,
-            int true_row,
-            int role) const;
+    qtModel () {
+        return this;
+    }
 
 
-    ///@}
-    /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+    //! Basic implementation only works with a single column.
+    bool
+    filterAcceptsRow (
+        int sourceRow,
+        const QModelIndex &sourceParent) const;
 
 
-
-    //! The user requested data to be filtered.
     virtual void
     reloadWithFilters (
             DbViewConfig cfg);
@@ -134,7 +114,7 @@ private:
     //
     //
     //
-}; /* class DbViewMo */
+}; /* class DbViewMoSi */
 
 /*  CLASS    =============================================================== */
 //
@@ -143,7 +123,7 @@ private:
 //
 
 
-#endif // DBVIEWMO_H
+#endif // DBVIEWMOSI_H
 /* ------------------------------------------------------------------------- */
 /* ========================================================================= */
 

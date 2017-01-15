@@ -1,11 +1,11 @@
 /* ========================================================================= */
 /* ------------------------------------------------------------------------- */
 /*!
-  \file         dbviewmo.h
+  \file         dbviewconfig.h
   \date         January 2017
   \author       Nicu Tofan
 
-  \brief        Contains the definition for DbViewMo class.
+  \brief        Contains the definition for DbViewConfig class.
 
 *//*
 
@@ -15,8 +15,8 @@
 */
 /* ------------------------------------------------------------------------- */
 /* ========================================================================= */
-#ifndef DBVIEWMO_H
-#define DBVIEWMO_H
+#ifndef DBVIEWCONFIG_H
+#define DBVIEWCONFIG_H
 //
 //
 //
@@ -24,9 +24,9 @@
 /*  INCLUDES    ------------------------------------------------------------ */
 
 #include <dbview/dbview-config.h>
-#include <dbview/dbviewconfig.h>
-#include <QtGlobal>
-#include <QVariantList>
+#include <Qt>
+#include <QList>
+
 
 /*  INCLUDES    ============================================================ */
 //
@@ -35,10 +35,8 @@
 //
 /*  DEFINITIONS    --------------------------------------------------------- */
 
-QT_BEGIN_NAMESPACE
-class QAbstractItemModel;
 class DbViewColFilter;
-QT_END_NAMESPACE
+
 
 /*  DEFINITIONS    ========================================================= */
 //
@@ -47,8 +45,9 @@ QT_END_NAMESPACE
 //
 /*  CLASS    --------------------------------------------------------------- */
 
-//! The interface for a model used in DbView and some helpers.
-class DBVIEW_EXPORT DbViewMo {
+//! .
+class DBVIEW_EXPORT DbViewConfig
+{
     //
     //
     //
@@ -63,9 +62,15 @@ class DBVIEW_EXPORT DbViewMo {
     //
     /*  DATA    ------------------------------------------------------------ */
 
-private:
-    int first_row_;
-    int max_rows_;
+public:
+
+    int first_row;
+    int max_rows;
+    int sort_column;
+    Qt::SortOrder sort_order;
+    QList<DbViewColFilter*> filters;
+    int ms_timeout;
+    bool parallel;
 
     /*  DATA    ============================================================ */
     //
@@ -76,65 +81,33 @@ private:
 
 public:
 
-    //! Constructor.
-    DbViewMo();
+    //! Default constructor.
+    DbViewConfig();
+
+    //! Copy constructor.
+    DbViewConfig (
+            const DbViewConfig & other);
 
     //! destructor
-    virtual ~DbViewMo();
+    virtual ~DbViewConfig();
 
+    //! Simple copy of values.
+    void straightCopy (
+            const DbViewConfig & other);
 
-    /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
-    /** @name Interface
-     * Methods that need to be implemented by the
-     * subclass.
-     */
-    ///@{
+    //! Simple copy of values and ensure no side effects from destructor.
+    void move (
+            DbViewConfig & other);
 
-    //! The model we're ghosting.
-    virtual const QAbstractItemModel *
-    qtModelC () const = 0;
-
-    //! The model we're ghosting.
-    virtual QAbstractItemModel *
-    qtModel () = 0;
-
-    //! Get the data.
-    virtual QVariant
-    data (
-            int display_row,
-            int true_row,
-            int column,
-            int role) const;
-
-    //! Get the header data; never display or edit roles.
-    virtual QVariant
-    rowHeaderData (
-            int display_row,
-            int true_row,
-            int role) const;
-
-
-    ///@}
-    /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
-
-
-
-    //! The user requested data to be filtered.
-    virtual void
-    reloadWithFilters (
-            DbViewConfig cfg);
-
-protected:
-
-private:
-
+    void
+    eraseFilters();
 
     /*  FUNCTIONS    ======================================================= */
     //
     //
     //
     //
-}; /* class DbViewMo */
+}; /* class DbViewConfig */
 
 /*  CLASS    =============================================================== */
 //
@@ -143,7 +116,7 @@ private:
 //
 
 
-#endif // DBVIEWMO_H
+#endif // DBVIEWCONFIG_H
 /* ------------------------------------------------------------------------- */
 /* ========================================================================= */
 

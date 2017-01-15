@@ -1,11 +1,11 @@
 /* ========================================================================= */
 /* ------------------------------------------------------------------------- */
 /*!
-  \file         dbviewmo.cc
+  \file         dbviewmosi.cc
   \date         January 2017
   \author       Nicu Tofan
 
-  \brief        Contains the implementation for DbViewMo class.
+  \brief        Contains the implementation for DbViewMoSi class.
 
 *//*
 
@@ -21,9 +21,8 @@
 //
 /*  INCLUDES    ------------------------------------------------------------ */
 
-#include "dbviewmo.h"
-
-#include <QAbstractItemModel>
+#include "dbviewmosi.h"
+#include "dbviewcolfilter.h"
 
 /*  INCLUDES    ============================================================ */
 //
@@ -41,69 +40,43 @@
 /*  CLASS    --------------------------------------------------------------- */
 
 /* ------------------------------------------------------------------------- */
-DbViewMo::DbViewMo ()
+DbViewMoSi::DbViewMoSi (
+        QAbstractItemModel *user_model,
+        QObject * parent) :
+    QSortFilterProxyModel(parent),
+    DbViewMo(),
+    cfg_()
+{
+    if (user_model != NULL) {
+        setSourceModel(user_model);
+    }
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+DbViewMoSi::~DbViewMoSi()
 {
 
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-DbViewMo::~DbViewMo()
+bool DbViewMoSi::filterAcceptsRow (int sourceRow,
+        const QModelIndex &sourceParent) const
 {
-
+    Q_UNUSED(sourceParent)
+    // next apply filters in columns, if any
+    QAbstractItemModel *user_model = sourceModel ();
+    return DbViewColFilter::acceptsRow (cfg_.filters, user_model, sourceRow);
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-/**
- * Default implementation simply forwards the request to
- * underlying model.
- *
- * @param display_row index of the row inside current page
- * @param true_row index of the row in the whole model
- * @param column index of the column
- * @param role the role
- * @return appropriate value
- */
-QVariant DbViewMo::data (
-        int display_row, int true_row, int column, int role) const
+void DbViewMoSi::reloadWithFilters (DbViewConfig cfg)
 {
-    Q_UNUSED(display_row);
-    const QAbstractItemModel * mm = qtModelC ();
-
-    return mm->data (mm->index (true_row, column), role);
-}
-/* ========================================================================= */
-
-/* ------------------------------------------------------------------------- */
-/**
- * Default implementation simply forwards the request to
- * underlying model.
- *
- * @param display_row index of the row inside current page
- * @param true_row index of the row in the whole model
- * @param role the role
- * @return appropriate value
- */
-QVariant DbViewMo::rowHeaderData (
-        int display_row, int true_row, int role) const
-{
-    Q_UNUSED(display_row);
-    return qtModelC()->headerData (
-                true_row, Qt::Vertical, role);
-}
-/* ========================================================================= */
-
-/* ------------------------------------------------------------------------- */
-/**
- * The entries in the list may be: strings, string lists
- *
- * @param filters the list of values to filter the model by,
- *                 one for each column
- */
-void DbViewMo::reloadWithFilters (DbViewConfig cfg)
-{
-
+    cfg_.move (cfg);
+    Q_ASSERT(cfg_.sort_column >= -1);
+    sort(cfg_.sort_column, cfg_.sort_order);
 }
 /* ========================================================================= */
 
