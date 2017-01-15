@@ -27,6 +27,9 @@
 
 #include <QString>
 #include <QStringList>
+#include <QDoubleSpinBox>
+#include <QRegExp>
+
 
 /*  INCLUDES    ============================================================ */
 //
@@ -34,6 +37,8 @@
 //
 //
 /*  DEFINITIONS    --------------------------------------------------------- */
+
+class DbViewColHdr;
 
 QT_BEGIN_NAMESPACE
 class QWidget;
@@ -101,10 +106,10 @@ public:
             bool include);
 
     //! The widget to be used for filtering the content of the table.
-    virtual QWidget *
-    control (
+    QWidget *
+    createControl (
             int column,
-            QWidget *parent);
+            DbViewColHdr *parent);
 
     //! Create an exact duplicate of this one.
     virtual DbViewColFilter *
@@ -115,9 +120,19 @@ public:
     acceptsData (
             const QVariant & data) const = 0;
 
-
+    //! Get the filter values from inside the wisget.
+    virtual void
+    updateFromWidget (
+            QWidget * wdg,
+            int column);
 
 protected:
+
+    //! The widget to be used for filtering the content of the table.
+    virtual QWidget *
+    control (
+            int column,
+            DbViewColHdr *parent);
 
 private:
 
@@ -170,7 +185,7 @@ class DBVIEW_EXPORT DbViewColFilterPattern : public DbViewColFilter {
 
 private:
 
-    QString pattern_;
+    QRegExp pattern_;
 
     /*  DATA    ============================================================ */
     //
@@ -194,14 +209,12 @@ public:
         pattern_ = other.pattern_;
     }
 
-    //! The widget to be used for filtering the content of the table.
-    virtual QWidget *
-    control (
-            int column,
-            QWidget *parent);
+    QString
+    pattern() const;
 
-    QString pattern() const;
-    void setPattern(const QString &pattern);
+    void
+    setPattern (
+            const QString &pattern);
 
     //! Create an exact duplicate of this one.
     virtual DbViewColFilter *
@@ -214,8 +227,20 @@ public:
     acceptsData (
             const QVariant & data) const;
 
+    //! Get the filter values from inside the wisget.
+    virtual void
+    updateFromWidget (
+            QWidget * wdg,
+            int column);
+
 
 protected:
+
+    //! The widget to be used for filtering the content of the table.
+    virtual QWidget *
+    control (
+            int column,
+            DbViewColHdr *parent);
 
 private:
 
@@ -275,12 +300,6 @@ public:
         values_ = other.values_;
     }
 
-    //! The widget to be used for filtering the content of the table.
-    virtual QWidget *
-    control (
-            int column,
-            QWidget *parent);
-
     QStringList values() const;
     void setValues(const QStringList &values);
 
@@ -296,7 +315,19 @@ public:
             const QVariant & data) const;
 
 
+    //! Get the filter values from inside the wisget.
+    virtual void
+    updateFromWidget (
+            QWidget * wdg,
+            int column);
+
 protected:
+
+    //! The widget to be used for filtering the content of the table.
+    virtual QWidget *
+    control (
+            int column,
+            DbViewColHdr *parent);
 
 private:
 
@@ -359,12 +390,6 @@ public:
         current_ = other.current_;
     }
 
-    //! The widget to be used for filtering the content of the table.
-    virtual QWidget *
-    control (
-            int column,
-            QWidget *parent);
-
     QStringList values() const;
     void setValues(const QStringList &values);
 
@@ -382,7 +407,19 @@ public:
     acceptsData (
             const QVariant & data) const;
 
+    //! Get the filter values from inside the wisget.
+    virtual void
+    updateFromWidget (
+            QWidget * wdg,
+            int column);
+
 protected:
+
+    //! The widget to be used for filtering the content of the table.
+    virtual QWidget *
+    control (
+            int column,
+            DbViewColHdr *parent);
 
 private:
 
@@ -491,7 +528,34 @@ public:
         return true;
     }
 
+    //! Get the filter values from inside the wisget.
+    virtual void
+    updateFromWidget (
+            QWidget * wdg,
+            int column) {
+        QDoubleSpinBox * result = qobject_cast<QDoubleSpinBox *>(wdg);
+        if (result == NULL) {
+            return NULL;
+        }
+        value_ = result->value ();
+    }
+
 protected:
+
+    //! The widget to be used for filtering the content of the table.
+    virtual QWidget *
+    control (
+            int column,
+            DbViewColHdr *parent) {
+        QDoubleSpinBox * result = new QDoubleSpinBox (parent);
+        result->setToolTip (
+                    QObject::tr (
+                        "Enter the value to filter this column by"));
+        QObject::connect(
+                    result, &QDoubleSpinBox::valueChanged,
+                    parent, &DbViewColHdr::filterTriggerByFilters);
+        return result;
+    }
 
 private:
 

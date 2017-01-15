@@ -63,6 +63,7 @@ private:
 
     DbTableView * table_;
     QList<QWidget*> controls_;
+    int half_;
 
     /*  DATA    ============================================================ */
     //
@@ -87,6 +88,11 @@ public:
             int column,
             QWidget * widget);
 
+    //! Get the control for a column.
+    QWidget *
+    control (
+            int column);
+
     //! Tell if a column has a control installed.
     bool
     hasControl (
@@ -101,6 +107,15 @@ public:
     removeAllControls ();
 
 
+public slots:
+
+    void
+    positionAllControls (
+            int first=0);
+
+    void
+    filterTriggerByFilters();
+
 protected:
 
     void
@@ -111,7 +126,19 @@ protected:
 
 private:
 
+    void
+    setHdrGeom (
+            int logicalIndex,
+            QWidget *widget = 0,
+            int width = -1);
+
 signals:
+
+    //! Emmited when the way a model is filtered has changed.
+    void
+    filterChanged (
+            int column);
+
 
 private slots:
 
@@ -120,6 +147,18 @@ private slots:
             int logicalIndex,
             int oldSize,
             int newSize);
+
+public:
+
+    static void
+    setWidgetColumn (
+            QWidget * wdg,
+            int column);
+
+    static int
+    widgetColumn (
+            QWidget * wdg);
+
 
     /*  FUNCTIONS    ======================================================= */
     //

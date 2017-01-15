@@ -253,6 +253,9 @@ QVariant InMo::headerData (
     Q_ASSERT(user_model_ != NULL);
 
     if (orientation == Qt::Horizontal) {
+        if (role == Qt::TextAlignmentRole) {
+            return (int)Qt::Alignment(Qt::AlignHCenter | Qt::AlignTop);
+        }
         return user_model_->qtModel ()->headerData (section, orientation, role);
     }
 

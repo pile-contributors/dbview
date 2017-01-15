@@ -73,10 +73,6 @@ public:
     virtual  DbViewMo *
     userModel () const;
 
-    //! Reaquire the data.
-    virtual void
-    f5 () const;
-
     //! Set the index of the current page.
     void
     setPageIndex (
@@ -106,6 +102,10 @@ public:
 
 
 public Q_SLOTS:
+
+    //! Reaquire the data.
+    virtual void
+    f5 () const;
 
     void
     downloadAsCsv ();
@@ -181,6 +181,8 @@ private Q_SLOTS:
     ///@{
 
 public:
+    void
+    updateFiltersFromWidgets() const;
 
     //! Get the filters to be used with the model.
     const QList<DbViewColFilter*> &
@@ -216,7 +218,7 @@ public:
     virtual void
     setColumnFilter (
             int column,
-            DbViewColFilter * value);
+            DbViewColFilter * filter);
 
 private:
 
@@ -403,6 +405,7 @@ public:
     void clearSpans();
 
     void sortByColumn(int column, Qt::SortOrder order);
+
 
 public Q_SLOTS:
     void selectRow(int row);

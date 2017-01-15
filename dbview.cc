@@ -75,6 +75,8 @@ DbTableView::DbTableView(
     DbViewColHdr * hdr = new DbViewColHdr (this, this);
     setHorizontalHeader (hdr);
     hdr->setSectionsClickable (true);
+    connect(hdr, &DbViewColHdr::filterChanged,
+            this, &DbTableView::f5);
 
     setSortingEnabled (true);
 
@@ -130,7 +132,28 @@ DbViewMo *DbTableView::userModel () const
 void DbTableView::f5 () const
 {
     DBVIEW_TRACE_ENTRY;
+    updateFiltersFromWidgets ();
     inmo->reloadWithFilters ();
+    DBVIEW_TRACE_EXIT;
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::updateFiltersFromWidgets () const
+{
+    DBVIEW_TRACE_ENTRY;
+    const QList<DbViewColFilter*> & filt = inmo->colFilters ();
+    int i_max = qMin(filt.count (), inmo->columnCount ());
+    DbViewColHdr * hhdr = static_cast<DbViewColHdr*>(horizontalHeader ());
+    for (int i = 0; i < i_max; ++i) {
+        DbViewColFilter* filter = filt[i];
+        if (filter != NULL) {
+            QWidget * wdg = hhdr->control (i);
+            if (filter != NULL) {
+                filter->updateFromWidget (wdg, i);
+            }
+        }
+    }
     DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
@@ -140,7 +163,7 @@ void DbTableView::setColumnFilter (
         int column, bool include, const QString &value)
 {
     DBVIEW_TRACE_ENTRY;
-    inmo->setColumnFilter (column, new DbViewColFilterPattern (value, include));
+    setColumnFilter (column, new DbViewColFilterPattern (value, include));
     DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
@@ -150,7 +173,7 @@ void DbTableView::setColumnFilter (
         int column, bool include, const QStringList &value)
 {
     DBVIEW_TRACE_ENTRY;
-    inmo->setColumnFilter (column, new DbViewColFilterList (value, include));
+    setColumnFilter (column, new DbViewColFilterList (value, include));
     DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
@@ -160,7 +183,7 @@ void DbTableView::setColumnFilterChoice (
         int column, bool include, const QStringList &value)
 {
     DBVIEW_TRACE_ENTRY;
-    inmo->setColumnFilter (column, new DbViewColFilterChoice (value, -1, include));
+    setColumnFilter (column, new DbViewColFilterChoice (value, -1, include));
     DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
@@ -175,10 +198,19 @@ void DbTableView::setColumnFilterChoice (
  * @param value the custom filtering class; ownership of the pointer is
  * transferred to this instance
  */
-void DbTableView::setColumnFilter (int column, DbViewColFilter * value)
+void DbTableView::setColumnFilter (int column, DbViewColFilter * filter)
 {
     DBVIEW_TRACE_ENTRY;
-    inmo->setColumnFilter (column, value);
+    inmo->setColumnFilter (column, filter);
+
+    DbViewColHdr * hhdr = static_cast<DbViewColHdr*>(horizontalHeader ());
+    if (filter != NULL) {
+        QWidget * wdg = NULL;
+        wdg = filter->createControl (column, hhdr);
+        if (wdg != NULL) {
+            hhdr->setControl (column, wdg);
+        }
+    }
     DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
@@ -199,7 +231,7 @@ void DbTableView::setAllFilterWidgets ()
         if (i < filters.count()) {
             DbViewColFilter* filter = filters[i];
             if (filter != NULL) {
-                wdg = filter->control (i, hhdr);
+                wdg = filter->createControl (i, hhdr);
                 if (wdg != NULL) {
                     hhdr->setControl (i, wdg);
                 }
