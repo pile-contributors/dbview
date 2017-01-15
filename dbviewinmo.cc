@@ -20,6 +20,15 @@ InMo::InMo(QObject *parent) :
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
+InMo::~InMo()
+{
+    if (!cfg_.parallel) {
+        cfg_.eraseFilters ();
+    }
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
 void InMo::setUserModel(DbViewMo *model)
 {
     beginResetModel();
@@ -233,8 +242,8 @@ void InMo::reloadCachedData ()
     } else {
         QAbstractItemModel * mm = user_model_->qtModel ();
         int tot_row_count = mm->rowCount();
-        crt_row_count_ = qMin(cfg_.max_rows, tot_row_count);
         cfg_.first_row = cfg_.max_rows * page_index_;
+        crt_row_count_ = qMin(cfg_.max_rows, tot_row_count-cfg_.first_row);
         pages_count_ = tot_row_count / cfg_.max_rows;
         int displ = pages_count_ * cfg_.max_rows;
         if (displ < tot_row_count)
@@ -310,13 +319,15 @@ QVariant InMo::data (const QModelIndex &index, int role) const
 /* ------------------------------------------------------------------------- */
 void InMo::reloadWithFilters ()
 {
-    beginResetModel();
+    disconnectModel ();
     if (cfg_.parallel) {
         QtConcurrent::run (
                     user_model_, &DbViewMo::reloadWithFilters, cfg_);
     } else {
         user_model_->reloadWithFilters (cfg_);
     }
+    connectModel (user_model_);
+    beginResetModel();
     endResetModel();
 }
 /* ========================================================================= */

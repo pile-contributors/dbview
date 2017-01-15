@@ -965,13 +965,29 @@ void DbTableView::pageIndexChanged (int value)
 {
     int show_value = value + 1;
     int pgcnt = inmo->pagesCount ();
-    Q_ASSERT(pgcnt > 0);
+    Q_ASSERT(pgcnt >= 0);
 
     // set the text for the three buttons in the middle
     // disable buttons that we cannot use
     // show in a distinct color the current page
     // enable/disable previous/next buttons
-    if (pgcnt == 1) {
+    if (pgcnt == 0) {
+        ui->tb1->setText (s_one);
+        ui->tb2->setText (s_two);
+        ui->tb3->setText (s_three);
+        ui->tb1->setProperty (pgidx, 0);
+        ui->tb2->setProperty (pgidx, 1);
+        ui->tb3->setProperty (pgidx, 2);
+
+        ui->tb2->setEnabled (false);
+        ui->tb3->setEnabled (false);
+        ui->tbNext->setEnabled (false);
+        ui->tbPrev->setEnabled (false);
+
+        ui->tb1->setChecked (true);
+        ui->tb2->setChecked (false);
+        ui->tb3->setChecked (false);
+    } else if (pgcnt == 1) {
         ui->tb1->setText (s_one);
         ui->tb2->setText (s_two);
         ui->tb3->setText (s_three);

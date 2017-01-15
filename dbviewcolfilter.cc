@@ -353,7 +353,7 @@ QWidget * DbViewColFilterChoice::control (int column, DbViewColHdr *parent)
 /* ------------------------------------------------------------------------- */
 bool DbViewColFilterChoice::acceptsData (const QVariant &data) const
 {
-    UNIMPLEMENTED_TRAP;
+    //UNIMPLEMENTED_TRAP;
     return true;
 }
 /* ========================================================================= */

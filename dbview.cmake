@@ -37,7 +37,7 @@ macro    (dbviewInit
         "dbview.ui")
 
     set(DBVIEW_QT_MODS
-        widgets, concurrent)
+        concurrent)
 
     pileSetSources(
         "${DBVIEW_INIT_NAME}"

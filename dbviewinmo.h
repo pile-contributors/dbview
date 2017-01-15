@@ -22,6 +22,8 @@ public:
     InMo(
             QObject *parent = 0);
 
+    virtual ~InMo();
+
     //! The model that has actual data.
     DbViewMo *
     userModel () const {

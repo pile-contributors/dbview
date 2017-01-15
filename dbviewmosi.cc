@@ -75,6 +75,9 @@ bool DbViewMoSi::filterAcceptsRow (int sourceRow,
 void DbViewMoSi::reloadWithFilters (DbViewConfig cfg)
 {
     cfg_.move (cfg);
+    // QAbstractItemModel *user_model = sourceModel ();
+    // needed so that a filtering is trigered
+    setFilterKeyColumn(0);
     Q_ASSERT(cfg_.sort_column >= -1);
     sort(cfg_.sort_column, cfg_.sort_order);
 }

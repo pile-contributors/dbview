@@ -68,9 +68,9 @@ DbViewConfig::DbViewConfig (
 {
     DBVIEW_TRACE_ENTRY;
     if (parallel) {
-        filters = other.filters;
-    } else {
         filters = DbViewColFilter::clone (other.filters);
+    } else {
+        filters = other.filters;
     }
     DBVIEW_TRACE_EXIT;
 }
@@ -80,7 +80,9 @@ DbViewConfig::DbViewConfig (
 DbViewConfig::~DbViewConfig()
 {
     DBVIEW_TRACE_ENTRY;
-    eraseFilters ();
+    if (parallel) {
+        eraseFilters ();
+    }
     DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
@@ -110,6 +112,7 @@ void DbViewConfig::move (DbViewConfig &other)
 void DbViewConfig::eraseFilters ()
 {
     DBVIEW_TRACE_ENTRY;
+
     qDeleteAll (filters);
     filters.clear ();
     DBVIEW_TRACE_EXIT;
