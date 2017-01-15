@@ -24,7 +24,14 @@ macro    (dbviewInit
         "dbviewcolfilter.h"
         "dbviewmosi.h"
         "dbviewconfig.h"
-        "dbviewmo.h")
+        "dbviewmo.h"
+        "filterwidgets/listofchoices.h"
+        "filterwidgets/floatinterval.h"
+        "filterwidgets/integerinterval.h"
+        "filterwidgets/timeinterval.h"
+        "filterwidgets/dateinterval.h"
+        "filterwidgets/datetimeinterval.h"
+        "filterwidgets/stringpattern.h")
     set(DBVIEW_SOURCES
         "dbview.cc"
         "dbviewmo.cc"
@@ -32,9 +39,22 @@ macro    (dbviewInit
         "dbviewcolhdr.cc"
         "dbviewmosi.cc"
         "dbviewconfig.cc"
-        "dbviewinmo.cc")
+        "dbviewinmo.cc"
+        "filterwidgets/listofchoices.cc"
+        "filterwidgets/floatinterval.cc"
+        "filterwidgets/integerinterval.cc"
+        "filterwidgets/timeinterval.cc"
+        "filterwidgets/dateinterval.cc"
+        "filterwidgets/datetimeinterval.cc"
+        "filterwidgets/stringpattern.cc")
     set(DBVIEW_UIS
-        "dbview.ui")
+        "dbview.ui"
+        "filterwidgets/listofchoices.ui"
+        "filterwidgets/floatinterval.ui"
+        "filterwidgets/integerinterval.ui"
+        "filterwidgets/dateinterval.ui"
+        "filterwidgets/datetimeinterval.ui"
+        "filterwidgets/stringpattern.ui")
 
     set(DBVIEW_QT_MODS
         concurrent)
