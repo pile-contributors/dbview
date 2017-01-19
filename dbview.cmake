@@ -23,6 +23,7 @@ macro    (dbviewInit
         "dbviewcolhdr.h"
         "dbviewcolfilter.h"
         "dbviewmosi.h"
+        "dbviewmosql.h"
         "dbviewconfig.h"
         "dbviewmo.h"
         "filterwidgets/listofchoices.h"
@@ -38,6 +39,7 @@ macro    (dbviewInit
         "dbviewcolfilter.cc"
         "dbviewcolhdr.cc"
         "dbviewmosi.cc"
+        "dbviewmosql.cc"
         "dbviewconfig.cc"
         "dbviewinmo.cc"
         "filterwidgets/listofchoices.cc"
@@ -57,7 +59,7 @@ macro    (dbviewInit
         "filterwidgets/stringpattern.ui")
 
     set(DBVIEW_QT_MODS
-        concurrent)
+        concurrent sql)
 
     pileSetSources(
         "${DBVIEW_INIT_NAME}"
