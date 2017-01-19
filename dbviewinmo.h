@@ -176,7 +176,11 @@ public:
     void
     eraseFilters ();
 
+
 private:
+
+    void
+    runReload ();
 
     //! Change a filter to the one specified in argument.
     void

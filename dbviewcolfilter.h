@@ -126,6 +126,10 @@ public:
             QWidget * wdg,
             int column);
 
+    //! Get an where clause to be used with sql statements.
+    virtual QString
+    asSql ();
+
 protected:
 
     //! The widget to be used for filtering the content of the table.
@@ -234,6 +238,7 @@ public:
             int column);
 
 
+    QString asSql();
 protected:
 
     //! The widget to be used for filtering the content of the table.
@@ -321,6 +326,7 @@ public:
             QWidget * wdg,
             int column);
 
+    QString asSql();
 protected:
 
     //! The widget to be used for filtering the content of the table.
@@ -413,6 +419,7 @@ public:
             QWidget * wdg,
             int column);
 
+    QString asSql();
 protected:
 
     //! The widget to be used for filtering the content of the table.

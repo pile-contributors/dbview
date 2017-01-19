@@ -61,6 +61,27 @@ DbViewColFilter::~DbViewColFilter()
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
+/**
+ * The default implementation returns an empty string meaning that
+ * this filter does not implement sql support.
+ *
+ * Returned value is expected to contain an %1 marker where the name of the
+ * column is to be replaced.
+ *
+ * Example:
+ * @code
+ * %1 NOT LIKE '%land%'
+ * @endcode
+ *
+ * @return either an emptty string or the value to use.
+ */
+QString DbViewColFilter::asSql ()
+{
+    return QString ();
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
 QWidget *DbViewColFilter::createControl (int column, DbViewColHdr *parent)
 {
     QWidget * wdg = control (column, parent);
@@ -213,6 +234,13 @@ void DbViewColFilterPattern::updateFromWidget (QWidget *wdg, int column)
 }
 /* ========================================================================= */
 
+/* ------------------------------------------------------------------------- */
+QString DbViewColFilterPattern::asSql ()
+{
+    return QString ("%1 REGEXP '") + pattern_.pattern() + QLatin1String("'");
+}
+/* ========================================================================= */
+
 /*  CLASS    =============================================================== */
 //
 //
@@ -281,6 +309,16 @@ void DbViewColFilterList::updateFromWidget (QWidget *wdg, int column)
 
     Q_ASSERT(false);
     // pattern_ = result->text ();
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+QString DbViewColFilterList::asSql ()
+{
+    return
+            QString ("%1 IN '") +
+            values_.join (QLatin1String ("', '")) +
+            QLatin1String ("'");
 }
 /* ========================================================================= */
 
@@ -371,6 +409,20 @@ void DbViewColFilterChoice::updateFromWidget (QWidget *wdg, int column)
 }
 /* ========================================================================= */
 
+/* ------------------------------------------------------------------------- */
+QString DbViewColFilterChoice::asSql ()
+{
+    if (current_ == -1) {
+        return QString ();
+    } else {
+        return
+                QString ("%1 = '") +
+                values_.at(current_) +
+                QLatin1String ("'");
+    }
+}
+/* ========================================================================= */
+
 /*  CLASS    =============================================================== */
 //
 //
@@ -378,7 +430,3 @@ void DbViewColFilterChoice::updateFromWidget (QWidget *wdg, int column)
 //
 /* ------------------------------------------------------------------------- */
 /* ========================================================================= */
-
-
-
-

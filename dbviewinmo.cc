@@ -37,6 +37,7 @@ void InMo::setUserModel(DbViewMo *model)
     }
     user_model_ = model;
     if (model != NULL) {
+        runReload ();
         connectModel (model);
     }
     endResetModel();
@@ -313,6 +314,18 @@ QVariant InMo::data (const QModelIndex &index, int role) const
 
     int row = index.row() + cfg_.first_row;
     return user_model_->data (index.row(), row, index.column(), role);
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void InMo::runReload ()
+{
+    if (cfg_.parallel) {
+        QtConcurrent::run (
+                    user_model_, &DbViewMo::reloadWithFilters, cfg_);
+    } else {
+        user_model_->reloadWithFilters (cfg_);
+    }
 }
 /* ========================================================================= */
 

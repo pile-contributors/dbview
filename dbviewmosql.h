@@ -68,6 +68,7 @@ private:
     DbViewConfig cfg_;
     QSqlDatabase db_;
     QString table_;
+    int total_count_;
 
     /*  DATA    ============================================================ */
     //
@@ -118,6 +119,8 @@ public:
     bool
     isValid() const;
 
+    int rowCount (
+            const QModelIndex &parent = QModelIndex()) const;
 
 //    virtual QVariant
 //    data (
@@ -153,6 +156,38 @@ public:
 //            const QMap<int,QVariant> &roles);
 
 
+    Qt::ItemFlags
+    flags (
+            const QModelIndex &index) const;
+
+    void
+    sort (
+            int column,
+            Qt::SortOrder order);
+
+    int
+    readTotalCount (
+            const QString &where_clause = QString ());
+
+
+    //! Get the data.
+    virtual QVariant
+    data (
+            int display_row,
+            int true_row,
+            int column,
+            int role) const;
+
+    //! Get the header data; never display or edit roles.
+    virtual QVariant
+    rowHeaderData (
+            int display_row,
+            int true_row,
+            int role) const;
+
+    QString
+    getWhereClause (
+            const DbViewConfig &cfg) const;
 protected:
 
 private:
