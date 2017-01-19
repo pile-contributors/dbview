@@ -116,7 +116,6 @@ void DbViewMoSql::reloadWithFilters (DbViewConfig cfg)
 
 
     QString where_clause = getWhereClause (cfg_);
-    // TODO
 
     total_count_ = readTotalCount (where_clause);
     QString ordering;
@@ -133,14 +132,15 @@ void DbViewMoSql::reloadWithFilters (DbViewConfig cfg)
                     record ().fieldName (cfg.sort_column))
                 .arg (ordering);
     }
-    QSqlQuery q (QString (
-                     "SELECT * FROM %1 %2 %3 LIMIT %4 OFFSET %5;")
-                 .arg (table_)          // 1
-                 .arg (where_clause)    // 2
-                 .arg (order_by)        // 3
-                 .arg (cfg.max_rows)    // 4
-                 .arg (cfg.first_row),  // 5
-                 db_);
+    QString s_crt_query = QString (
+                "SELECT * FROM %1 %2 %3 LIMIT %4 OFFSET %5;")
+            .arg (table_)          // 1
+            .arg (where_clause)    // 2
+            .arg (order_by)        // 3
+            .arg (cfg.max_rows)    // 4
+            .arg (cfg.first_row);  // 5
+    qDebug () << s_crt_query;
+    QSqlQuery q (s_crt_query, db_);
 
     setQuery (q);
     // QAbstractItemModel *user_model = sourceModel ();

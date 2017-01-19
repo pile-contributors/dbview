@@ -237,7 +237,11 @@ void DbViewColFilterPattern::updateFromWidget (QWidget *wdg, int column)
 /* ------------------------------------------------------------------------- */
 QString DbViewColFilterPattern::asSql ()
 {
-    return QString ("%1 REGEXP '") + pattern_.pattern() + QLatin1String("'");
+    if (pattern_.isEmpty ()) {
+        return QString ();
+    } else {
+        return QString ("%1 REGEXP '") + pattern_.pattern() + QLatin1String("'");
+    }
 }
 /* ========================================================================= */
 
@@ -315,10 +319,14 @@ void DbViewColFilterList::updateFromWidget (QWidget *wdg, int column)
 /* ------------------------------------------------------------------------- */
 QString DbViewColFilterList::asSql ()
 {
-    return
-            QString ("%1 IN '") +
-            values_.join (QLatin1String ("', '")) +
-            QLatin1String ("'");
+    if (values_.isEmpty ()) {
+        return QString ();
+    } else {
+        return
+                QString ("%1 IN '") +
+                values_.join (QLatin1String ("', '")) +
+                QLatin1String ("'");
+    }
 }
 /* ========================================================================= */
 
