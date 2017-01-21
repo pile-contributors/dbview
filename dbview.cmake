@@ -9,7 +9,7 @@ include(pile_support)
 
 # initialize this module
 macro    (dbviewInit
-          ref_cnt_use_mode)
+          dbview_use_mode)
 
     # default name
     if (NOT DBVIEW_INIT_NAME)
@@ -71,7 +71,7 @@ macro    (dbviewInit
         "${DBVIEW_INIT_NAME}"
         "0;0;1;d"
         "ON"
-        "${ref_cnt_use_mode}"
+        "${dbview_use_mode}"
         ""
         "database"
         "qt;GUI")
