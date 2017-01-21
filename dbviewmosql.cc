@@ -82,12 +82,12 @@ bool DbViewMoSql::filterAcceptsRow (int sourceRow,
 int DbViewMoSql::readTotalCount (
         const QString & where_clause)
 {
-    QSqlQuery query (
-                QString (
-                     "SELECT COUNT(*) FROM %1 %2;")
-                 .arg (table_)          // 1
-                 .arg (where_clause),   // 2
-                 db_);
+    QString s_crt_query = QString (
+                "SELECT COUNT(*) FROM %1 %2;")
+            .arg (table_)          // 1
+            .arg (where_clause);
+    qDebug () << s_crt_query;
+    QSqlQuery query (s_crt_query, db_);
 
     if (!query.exec()) {
         qDebug() << "personsCount error:  "
@@ -118,6 +118,9 @@ void DbViewMoSql::reloadWithFilters (DbViewConfig cfg)
     QString where_clause = getWhereClause (cfg_);
 
     total_count_ = readTotalCount (where_clause);
+    if (total_count_ == -1) {
+        return;
+    }
     QString ordering;
     if (cfg.sort_order == Qt::AscendingOrder) {
         ordering = "ASC";
