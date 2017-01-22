@@ -54,6 +54,7 @@ macro    (dbviewInit
         "filterwidgets/listofchoices.ui"
         "filterwidgets/floatinterval.ui"
         "filterwidgets/integerinterval.ui"
+        "filterwidgets/timeinterval.ui"
         "filterwidgets/dateinterval.ui"
         "filterwidgets/datetimeinterval.ui"
         "filterwidgets/stringpattern.ui")
