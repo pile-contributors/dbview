@@ -2,7 +2,7 @@
 /* ------------------------------------------------------------------------- */
 /*!
 \file         integerinterval.cc
-\integer         January 2017
+\date         January 2017
 \author       Nicu Tofan
 
 \brief        Contains the implementation for IntegerInterval class.

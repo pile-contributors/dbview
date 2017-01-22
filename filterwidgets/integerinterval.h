@@ -2,7 +2,7 @@
 /* ------------------------------------------------------------------------- */
 /*!
 \file         integerinterval.h
-\integer         January 2017
+\date         January 2017
 \author       Nicu Tofan
 
 \brief        Contains the definition for IntegerInterval class.
