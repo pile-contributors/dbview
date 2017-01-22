@@ -170,7 +170,7 @@
    <item row="1" column="2">
     <widget class="QLabel" name="labelRecords">
      <property name="text">
-      <string>12000 records</string>
+      <string/>
      </property>
     </widget>
    </item>
@@ -193,7 +193,7 @@
    <item row="1" column="3">
     <widget class="QToolButton" name="tbDownload">
      <property name="text">
-      <string>&gt;</string>
+      <string>D</string>
      </property>
     </widget>
    </item>

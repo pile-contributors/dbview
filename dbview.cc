@@ -43,6 +43,9 @@ DbTableView::DbTableView(
     DBVIEW_TRACE_ENTRY;
     ui->setupUi(this);
 
+    // TODO: As it is not yet implemented we will hide it for now
+    ui->tbDownload->hide();
+
     connect(ui->tableView, &QAbstractItemView::iconSizeChanged,
             this, &DbTableView::iconSizeChanged);
 
