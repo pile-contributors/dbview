@@ -113,20 +113,13 @@ public:
             int true_row,
             int role) const;
 
-
-    ///@}
-    /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
-
-
-
     //! The user requested data to be filtered.
     virtual void
     reloadWithFilters (
             DbViewConfig cfg);
 
-protected:
-
-private:
+    ///@}
+    /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
 
     /*  FUNCTIONS    ======================================================= */

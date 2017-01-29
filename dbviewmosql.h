@@ -88,87 +88,26 @@ public:
     //! destructor
     virtual ~DbViewMoSql();
 
+
+    /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+    /** @name DbViewMo Interface
+     *
+     */
+    ///@{
+
+public:
+
     //! The model we're ghosting.
     virtual const QAbstractItemModel *
     qtModelC () const {
         return this;
     }
 
-
     //! The model we're ghosting.
     virtual QAbstractItemModel *
     qtModel () {
         return this;
     }
-
-
-    //! Basic implementation only works with a single column.
-    bool
-    filterAcceptsRow (
-        int sourceRow,
-        const QModelIndex &sourceParent) const;
-
-
-    virtual void
-    reloadWithFilters (
-            DbViewConfig cfg);
-
-
-
-    //! Is this a valid model or not?
-    bool
-    isValid() const;
-
-    int rowCount (
-            const QModelIndex &parent = QModelIndex()) const;
-
-//    virtual QVariant
-//    data (
-//            const QModelIndex &index,
-//            int role = Qt::DisplayRole) const;
-
-    virtual bool
-    setData (
-            const QModelIndex &index,
-            const QVariant &value,
-            int role = Qt::EditRole);
-
-//    virtual QVariant
-//    headerData (
-//            int section,
-//            Qt::Orientation orientation,
-//            int role = Qt::DisplayRole) const;
-
-//    virtual bool
-//    setHeaderData (
-//            int section,
-//            Qt::Orientation orientation,
-//            const QVariant &value,
-//            int role = Qt::EditRole);
-
-//    virtual QMap<int,QVariant>
-//    itemData (
-//            const QModelIndex &index) const;
-
-//    virtual bool
-//    setItemData (
-//            const QModelIndex &index,
-//            const QMap<int,QVariant> &roles);
-
-
-    Qt::ItemFlags
-    flags (
-            const QModelIndex &index) const;
-
-    void
-    sort (
-            int column,
-            Qt::SortOrder order);
-
-    int
-    readTotalCount (
-            const QString &where_clause = QString ());
-
 
     //! Get the data.
     virtual QVariant
@@ -185,13 +124,64 @@ public:
             int true_row,
             int role) const;
 
+    //! The user requested data to be filtered.
+    virtual void
+    reloadWithFilters (
+            DbViewConfig cfg);
+
+    ///@}
+    /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+
+
+    /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+    /** @name QSqlQueryModel Interface
+     *
+     */
+    ///@{
+
+public:
+
+    //! The number of rows that we're showing right now.
+    virtual int
+    rowCount (
+            const QModelIndex &parent = QModelIndex()) const;
+
+    //! Change model data.
+    virtual bool
+    setData (
+            const QModelIndex &index,
+            const QVariant &value,
+            int role = Qt::EditRole);
+
+    //! Item flags.
+    Qt::ItemFlags
+    flags (
+            const QModelIndex &index) const;
+
+    //! Perform model sorting.
+    void
+    sort (
+            int column,
+            Qt::SortOrder order);
+
+    //! Tell if currently installed filter accepts indicated row.
+    bool
+    filterAcceptsRow (
+        int sourceRow,
+        const QModelIndex &sourceParent) const;
+
+
+    ///@}
+    /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
+
+
+    int
+    readTotalCount (
+            const QString &where_clause = QString ());
+
     QString
     getWhereClause (
             const DbViewConfig &cfg) const;
-protected:
-
-private:
-
 
     /*  FUNCTIONS    ======================================================= */
     //

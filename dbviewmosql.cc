@@ -68,8 +68,11 @@ DbViewMoSql::~DbViewMoSql()
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-bool DbViewMoSql::filterAcceptsRow (int sourceRow,
-        const QModelIndex &sourceParent) const
+/**
+ * Basic implementation only works with a single column.
+ */
+bool DbViewMoSql::filterAcceptsRow (
+        int sourceRow, const QModelIndex &sourceParent) const
 {
     Q_UNUSED(sourceParent)
     // next apply filters in columns, if any
@@ -151,14 +154,6 @@ void DbViewMoSql::reloadWithFilters (DbViewConfig cfg)
     // setFilterKeyColumn(0);
     //Q_ASSERT(cfg_.sort_column >= -1);
     //sort(cfg_.sort_column, cfg_.sort_order);
-}
-/* ========================================================================= */
-
-/* ------------------------------------------------------------------------- */
-bool DbViewMoSql::isValid() const
-{
-    /// @todo
-    return true;
 }
 /* ========================================================================= */
 
