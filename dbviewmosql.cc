@@ -149,11 +149,6 @@ void DbViewMoSql::reloadWithFilters (DbViewConfig cfg)
     QSqlQuery q (s_crt_query, db_);
 
     setQuery (q);
-    // QAbstractItemModel *user_model = sourceModel ();
-    // needed so that a filtering is trigered
-    // setFilterKeyColumn(0);
-    //Q_ASSERT(cfg_.sort_column >= -1);
-    //sort(cfg_.sort_column, cfg_.sort_order);
 }
 /* ========================================================================= */
 
@@ -166,51 +161,11 @@ int DbViewMoSql::rowCount (const QModelIndex &parent) const
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-//QVariant DbViewMoSql::data (
-//        const QModelIndex &index, int role) const
-//{
-//    /* MUST be implemented */
-//    return QVariant();
-//}
-/* ========================================================================= */
-
-/* ------------------------------------------------------------------------- */
 bool DbViewMoSql::setData (
         const QModelIndex &index, const QVariant &value, int role)
 {
     return QAbstractItemModel::setData (index, value, role);
 }
-/* ========================================================================= */
-
-/* ------------------------------------------------------------------------- */
-//QVariant DbViewMoSql::headerData (
-//        int section, Qt::Orientation orientation, int role) const
-//{
-//    return QAbstractItemModel::headerData (section, orientation, role);
-//}
-/* ========================================================================= */
-
-/* ------------------------------------------------------------------------- */
-//bool DbViewMoSql::setHeaderData (
-//        int section, Qt::Orientation orientation, const QVariant &value, int role)
-//{
-//    return QAbstractItemModel::setHeaderData (section, orientation, value, role);
-//}
-/* ========================================================================= */
-
-/* ------------------------------------------------------------------------- */
-//QMap<int, QVariant> DbViewMoSql::itemData (const QModelIndex &index) const
-//{
-//    return QAbstractItemModel::itemData (index);
-//}
-/* ========================================================================= */
-
-/* ------------------------------------------------------------------------- */
-//bool DbViewMoSql::setItemData (
-//        const QModelIndex & index, const QMap<int, QVariant> & roles)
-//{
-//    return QAbstractItemModel::setItemData (index, roles);
-//}
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */

@@ -141,7 +141,7 @@ public:
 
 public:
 
-    //! The number of rows that we're showing right now.
+    //! The total number of rows.
     virtual int
     rowCount (
             const QModelIndex &parent = QModelIndex()) const;
