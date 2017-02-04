@@ -62,7 +62,7 @@ public:
 
     //! Get a pointer to internal table view.
     virtual QTableView*
-    internalTableView ();
+    internalTableView () const;
 
     //! Change the model that we're presenting.
     virtual void

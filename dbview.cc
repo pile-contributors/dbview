@@ -104,7 +104,7 @@ DbTableView::~DbTableView()
 /**
  * If at all possible avoid working directly with internal table view.
  */
-QTableView *DbTableView::internalTableView ()
+QTableView *DbTableView::internalTableView () const
 {
     return ui->tableView;
 }
