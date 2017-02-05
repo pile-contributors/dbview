@@ -46,7 +46,7 @@ public:
             Qt::Orientation orientation,
             int role = Qt::DisplayRole) const override;
 
-    //! This only returns the number of rows in current page
+    //! Number or rows.
     int
     rowCount (
             const QModelIndex &parent = QModelIndex()) const override;

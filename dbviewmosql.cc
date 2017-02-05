@@ -21,6 +21,7 @@
 //
 /*  INCLUDES    ------------------------------------------------------------ */
 
+#include "dbview-private.h"
 #include "dbviewmosql.h"
 #include "dbviewcolfilter.h"
 
@@ -89,12 +90,11 @@ int DbViewMoSql::readTotalCount (
                 "SELECT COUNT(*) FROM %1 %2;")
             .arg (table_)          // 1
             .arg (where_clause);
-    qDebug () << s_crt_query;
-    QSqlQuery query (s_crt_query, db_);
 
-    if (!query.exec()) {
-        qDebug() << "personsCount error:  "
-                 << query.lastError();
+    QSqlQuery query (db_);
+    prepareFilteredQuery (s_crt_query, query);
+
+    if (!query.isActive ()) {
         return -1;
     } else if (query.next ()) {
         bool b_ok;
@@ -113,42 +113,71 @@ int DbViewMoSql::readTotalCount (
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
+void DbViewMoSql::prepareFilteredQuery (
+        const QString & s_statement, QSqlQuery & q)
+{
+    qDebug () << s_statement;
+
+    for (;;) {
+        if (!q.prepare (s_statement)) {
+            DBVIEW_DEBUGM("Prepare failed\n");
+            break;
+        }
+        if (!bindToReloadQuery (q)) {
+            DBVIEW_DEBUGM("Bind failed\n");
+            break;
+        }
+        if (!q.exec ()) {
+            DBVIEW_DEBUGM("Exec failed\n");
+            break;
+        }
+
+        break;
+    }
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
 void DbViewMoSql::reloadWithFilters (DbViewConfig cfg)
 {
     cfg_.move (cfg);
+    for (;;) {
 
+        QString where_clause = getReloadWhereClause (cfg_);
 
-    QString where_clause = getWhereClause (cfg_);
+        total_count_ = readTotalCount (where_clause);
+        if (total_count_ == -1) {
+            break;
+        }
+        QString ordering;
+        if (cfg.sort_order == Qt::AscendingOrder) {
+            ordering = "ASC";
+        } else {
+            ordering = "DESC";
+        }
+        QString order_by;
+        if (cfg.sort_column == -1) {
+            order_by = QString();
+        } else {
+            order_by = QString ("ORDER BY %1 %2").arg (
+                        record ().fieldName (cfg.sort_column))
+                    .arg (ordering);
+        }
+        QString s_crt_query = QString (
+                    "SELECT * FROM %1 %2 %3 LIMIT %4 OFFSET %5;")
+                .arg (table_)          // 1
+                .arg (where_clause)    // 2
+                .arg (order_by)        // 3
+                .arg (cfg.max_rows)    // 4
+                .arg (cfg.first_row);  // 5
 
-    total_count_ = readTotalCount (where_clause);
-    if (total_count_ == -1) {
-        return;
+        QSqlQuery q (db_);
+        beginResetModel ();
+        prepareFilteredQuery (s_crt_query, q);
+        setQuery (q);
+        endResetModel ();
+        break;
     }
-    QString ordering;
-    if (cfg.sort_order == Qt::AscendingOrder) {
-        ordering = "ASC";
-    } else {
-        ordering = "DESC";
-    }
-    QString order_by;
-    if (cfg.sort_column == -1) {
-        order_by = QString();
-    } else {
-        order_by = QString ("ORDER BY %1 %2").arg (
-                    record ().fieldName (cfg.sort_column))
-                .arg (ordering);
-    }
-    QString s_crt_query = QString (
-                "SELECT * FROM %1 %2 %3 LIMIT %4 OFFSET %5;")
-            .arg (table_)          // 1
-            .arg (where_clause)    // 2
-            .arg (order_by)        // 3
-            .arg (cfg.max_rows)    // 4
-            .arg (cfg.first_row);  // 5
-    qDebug () << s_crt_query;
-    QSqlQuery q (s_crt_query, db_);
-
-    setQuery (q);
 }
 /* ========================================================================= */
 
@@ -225,7 +254,7 @@ static const QLatin1String s_where (" WHERE ");
  * @param role the role
  * @return appropriate value
  */
-QString DbViewMoSql::getWhereClause (
+QString DbViewMoSql::getReloadWhereClause (
         const DbViewConfig & cfg) const
 {
     int i = 0;

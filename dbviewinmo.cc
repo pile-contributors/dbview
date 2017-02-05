@@ -184,10 +184,8 @@ void InMo::setPageRowCount (int value)
 void InMo::setPageIndex (int value)
 {
     Q_ASSERT(value >= 0);
-    beginResetModel ();
     page_index_ = value;
-    reloadCachedData ();
-    endResetModel ();
+    reloadWithFilters ();
 }
 /* ========================================================================= */
 
@@ -332,12 +330,7 @@ void InMo::runReload ()
 void InMo::reloadWithFilters ()
 {
     disconnectModel ();
-    if (cfg_.parallel) {
-        QtConcurrent::run (
-                    user_model_, &DbViewMo::reloadWithFilters, cfg_);
-    } else {
-        user_model_->reloadWithFilters (cfg_);
-    }
+    runReload ();
     connectModel (user_model_);
     beginResetModel();
     endResetModel();

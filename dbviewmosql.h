@@ -149,11 +149,36 @@ public:
     reloadWithFilters (
             DbViewConfig cfg);
 
-    //! Get the number of records in the backend.
+    //! Get the (cached) number of records in the backend.
     virtual int
     totalRowCount () const {
         return total_count_;
     }
+
+    //! Bind values to a query.
+    virtual bool
+    bindToReloadQuery (
+            QSqlQuery & q) const {
+        Q_UNUSED (q);
+        return true;
+    }
+
+    //! Ask the backend about the total number of records.
+    virtual int
+    readTotalCount (
+            const QString &where_clause = QString ());
+
+    //! The condition for sql query.
+    virtual QString
+    getReloadWhereClause (
+            const DbViewConfig &cfg) const;
+
+protected:
+
+    virtual void
+    prepareFilteredQuery (
+            const QString &s_statement,
+            QSqlQuery & q);
 
     ///@}
     /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
@@ -196,13 +221,6 @@ public:
     /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
 
-    int
-    readTotalCount (
-            const QString &where_clause = QString ());
-
-    QString
-    getWhereClause (
-            const DbViewConfig &cfg) const;
 
     /*  FUNCTIONS    ======================================================= */
     //
