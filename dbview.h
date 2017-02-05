@@ -73,6 +73,10 @@ public:
     virtual  DbViewMo *
     userModel () const;
 
+    //! Restores visible status to the one saved inside.
+    void
+    restoreVisibleStatus ();
+
     //! Set the index of the current page.
     void
     setPageIndex (
@@ -105,7 +109,7 @@ public Q_SLOTS:
 
     //! Reaquire the data.
     virtual void
-    f5 () const;
+    f5 ();
 
     void
     downloadAsCsv ();
@@ -407,7 +411,6 @@ public:
     void sortByColumn(int column, Qt::SortOrder order);
 
 
-public Q_SLOTS:
     void selectRow(int row);
     void selectColumn(int column);
     void hideRow(int row);
@@ -421,12 +424,43 @@ public Q_SLOTS:
     void sortByColumn(int column);
     void setShowGrid(bool show);
 
+private Q_SLOTS:
+
+    void whenCurrentChanged (const QModelIndex &current, const QModelIndex &previous);
+    void whenCurrentRowChanged (const QModelIndex &current, const QModelIndex &previous);
+    void whenCurrentColumnChanged (const QModelIndex &current, const QModelIndex &previous);
+
+
     ///@}
     /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
 Q_SIGNALS:
 
-    void iconSizeChanged(const QSize &size);
+    void
+    iconSizeChanged (
+            const QSize &size);
+
+    void
+    currentRowChanged (
+            int crt_row,
+            int prev_row);
+
+    void
+    currentColumnChanged (
+            int crt_col,
+            int prev_col);
+
+    void
+    currentChanged (
+            int crt_row,
+            int crt_col,
+            int prev_row,
+            int prev_col);
+
+    void
+    selectionChanged (
+            const QItemSelection &selected,
+            const QItemSelection &deselected);
 
 protected:
 

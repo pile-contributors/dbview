@@ -35,6 +35,24 @@ public:
     setUserModel (
             DbViewMo *model);
 
+    //! Mark a column as being hidden or shown.
+    void
+    setColumnHidden (
+            int column,
+            bool hide);
+
+    //! Tell if a column is visible (true) or not.
+    bool
+    isColumnVisible(
+            int column);
+
+    //! Get the entire list of shown/hidden status.
+    const QList<bool> &
+    columnsVisibleStatus () const {
+        return shown_sts_;
+    }
+
+
     //! Total numebr of records in underlying model.
     int
     totalRowCount () const;
@@ -210,6 +228,8 @@ private:
     int page_index_; /**< Changed by the user; zero-based. */
     int crt_row_count_; /**< derived from underlying model */
     int pages_count_; /**< derived from underlying model */
+
+    QList<bool> shown_sts_; /**< tells if a column is hidden or not */
 };
 } // namespace impl
 

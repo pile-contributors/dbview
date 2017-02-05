@@ -114,12 +114,39 @@ QTableView *DbTableView::internalTableView () const
 void DbTableView::setUserModel (DbViewMo *model)
 {
     DBVIEW_TRACE_ENTRY;
+    QItemSelectionModel * sm = ui->tableView->selectionModel ();
+    if (sm != NULL) {
+        disconnect(sm, &QItemSelectionModel::currentRowChanged,
+                   this, &DbTableView::whenCurrentRowChanged);
+        disconnect(sm, &QItemSelectionModel::currentColumnChanged,
+                   this, &DbTableView::whenCurrentColumnChanged);
+        disconnect(sm, &QItemSelectionModel::currentChanged,
+                   this, &DbTableView::whenCurrentChanged);
+        disconnect(sm, &QItemSelectionModel::selectionChanged,
+                   this, &DbTableView::selectionChanged);
+    }
+
+
     inmo->eraseFilters ();
     ui->tableView->setModel (NULL);
     inmo->setUserModel (model);
     ui->tableView->setModel (inmo);
     setAllFilterWidgets ();
     pageIndexChanged (0);
+
+
+    sm = ui->tableView->selectionModel ();
+    if (sm != NULL) {
+        connect(sm, &QItemSelectionModel::currentRowChanged,
+                this, &DbTableView::whenCurrentRowChanged);
+        connect(sm, &QItemSelectionModel::currentColumnChanged,
+                this, &DbTableView::whenCurrentColumnChanged);
+        connect(sm, &QItemSelectionModel::currentChanged,
+                this, &DbTableView::whenCurrentChanged);
+        connect(sm, &QItemSelectionModel::selectionChanged,
+                this, &DbTableView::selectionChanged);
+    }
+
     DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
@@ -132,11 +159,23 @@ DbViewMo *DbTableView::userModel () const
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-void DbTableView::f5 () const
+void DbTableView::restoreVisibleStatus()
+{
+    int i_max = inmo->columnCount ();
+    for (int i = 0; i < i_max; ++i) {
+        bool b_hidden = !inmo->isColumnVisible (i);
+        ui->tableView->setColumnHidden (i, b_hidden);
+    }
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::f5 ()
 {
     DBVIEW_TRACE_ENTRY;
     updateFiltersFromWidgets ();
     inmo->reloadWithFilters ();
+    restoreVisibleStatus ();
     DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
@@ -356,6 +395,7 @@ bool DbTableView::isColumnHidden(int column) const
 void DbTableView::setColumnHidden(int column, bool hide)
 {
     ui->tableView->setColumnHidden (column, hide);
+    inmo->setColumnHidden (column, hide);
 }
 
 void DbTableView::setSortingEnabled(bool enable)
@@ -487,6 +527,26 @@ void DbTableView::sortByColumn(int column)
 void DbTableView::setShowGrid(bool show)
 {
     ui->tableView->setShowGrid (show);
+}
+
+void DbTableView::whenCurrentChanged (
+        const QModelIndex &current, const QModelIndex &previous)
+{
+    emit currentChanged (
+                current.row (), current.column (),
+                previous.row (), previous.column ());
+}
+
+void DbTableView::whenCurrentRowChanged (
+        const QModelIndex &current, const QModelIndex &previous)
+{
+    emit currentRowChanged (current.row(), previous.row ());
+}
+
+void DbTableView::whenCurrentColumnChanged (
+        const QModelIndex &current, const QModelIndex &previous)
+{
+    emit currentColumnChanged (current.column (), previous.column ());
 }
 
 void DbTableView::setItemDelegate(QAbstractItemDelegate *delegate)
@@ -793,6 +853,7 @@ void DbTableView::setFrameShadow(QAbstractScrollArea::Shadow value)
 void DbTableView::setPageIndex (int value)
 {
     inmo->setPageIndex (value);
+    restoreVisibleStatus ();
 }
 /* ========================================================================= */
 
@@ -814,6 +875,7 @@ int DbTableView::firstRowIndex () const
 void DbTableView::setFirstRowIndex (int value)
 {
     inmo->setFirstRowIndex (value);
+    restoreVisibleStatus ();
 }
 /* ========================================================================= */
 
@@ -842,13 +904,14 @@ void DbTableView::downloadAsCsv ()
 void DbTableView::goToPage (int value)
 {
     inmo->goToPage (value);
+    restoreVisibleStatus ();
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
 void DbTableView::goToNextPage ()
 {
-    inmo->goToPage (inmo->pageIndex() + 1);
+    goToPage (inmo->pageIndex() + 1);
 }
 /* ========================================================================= */
 
@@ -882,35 +945,35 @@ void DbTableView::goToPageRight ()
 /* ------------------------------------------------------------------------- */
 void DbTableView::goToPreviousPage ()
 {
-    inmo->goToPage (inmo->pageIndex() - 1);
+    goToPage (inmo->pageIndex() - 1);
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
 void DbTableView::set100RowsPerPage ()
 {
-    inmo->setPageRowCount (100);
+    setRowsPerPage (100);
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
 void DbTableView::set10RowsPerPage ()
 {
-    inmo->setPageRowCount (10);
+    setRowsPerPage (10);
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
 void DbTableView::set25RowsPerPage ()
 {
-    inmo->setPageRowCount (25);
+    setRowsPerPage (25);
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
 void DbTableView::set50RowsPerPage ()
 {
-    inmo->setPageRowCount (50);
+    setRowsPerPage (50);
 }
 /* ========================================================================= */
 
@@ -946,6 +1009,7 @@ void DbTableView::modelWasResetted()
     rowsPerPageChanged (inmo->pageRowCount ());
     ui->labelRecords->setText (
                 QObject::tr("%1 records").arg (inmo->totalRowCount ()));
+    restoreVisibleStatus ();
 }
 /* ========================================================================= */
 
@@ -1085,6 +1149,7 @@ void DbTableView::pageIndexChanged (int value)
         }
         ui->tbNext->setEnabled (true);
     }
+    restoreVisibleStatus ();
 }
 /* ========================================================================= */
 

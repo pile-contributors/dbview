@@ -14,7 +14,8 @@ InMo::InMo(QObject *parent) :
     user_model_(NULL),
     page_index_(0),
     crt_row_count_(0),
-    pages_count_(1)
+    pages_count_(1),
+    shown_sts_ ()
 {
 }
 /* ========================================================================= */
@@ -32,6 +33,8 @@ InMo::~InMo()
 void InMo::setUserModel(DbViewMo *model)
 {
     beginResetModel();
+    shown_sts_.clear ();
+
     if (user_model_!= NULL) {
         disconnectModel ();
     }
@@ -368,3 +371,24 @@ void InMo::goToPage (int value)
 }
 /* ========================================================================= */
 
+/* ------------------------------------------------------------------------- */
+void InMo::setColumnHidden (int column, bool hide)
+{
+    while (shown_sts_.count() <= column) {
+        shown_sts_ << true;
+    }
+    shown_sts_[column] = !hide;
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+bool InMo::isColumnVisible (int column)
+{
+    if (column < 0)
+        return false;
+    else if (column >= shown_sts_.count())
+        return true;
+    else
+        return shown_sts_.at (column);
+}
+/* ========================================================================= */
