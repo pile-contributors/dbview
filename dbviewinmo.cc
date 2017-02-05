@@ -241,8 +241,7 @@ void InMo::reloadCachedData ()
         cfg_.first_row = 0;
         pages_count_ = 1;
     } else {
-        QAbstractItemModel * mm = user_model_->qtModel ();
-        int tot_row_count = mm->rowCount();
+        int tot_row_count = user_model_->totalRowCount ();
         cfg_.first_row = cfg_.max_rows * page_index_;
         crt_row_count_ = qMin(cfg_.max_rows, tot_row_count-cfg_.first_row);
         pages_count_ = tot_row_count / cfg_.max_rows;
@@ -358,7 +357,7 @@ void InMo::goToPage (int value)
 {
     page_index_ = value;
     cfg_.first_row = value * cfg_.max_rows;
-    int tot_rows = user_model_->qtModel ()->rowCount ();
+    int tot_rows = user_model_->totalRowCount ();
 
     if (cfg_.first_row >= tot_rows) {
         page_index_ = pages_count_ - 1;

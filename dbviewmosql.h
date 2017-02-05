@@ -88,6 +88,26 @@ public:
     //! destructor
     virtual ~DbViewMoSql();
 
+    const DbViewConfig &
+    getCfg() const {
+        return cfg_;
+    }
+
+    void
+    setCfg (const DbViewConfig &cfg) {
+        cfg_ = cfg;
+    }
+
+    const QString &
+    getTable() const {
+        return table_;
+    }
+
+    void
+    setTable (const QString &table) {
+        table_ = table;
+    }
+
 
     /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
     /** @name DbViewMo Interface
@@ -129,6 +149,12 @@ public:
     reloadWithFilters (
             DbViewConfig cfg);
 
+    //! Get the number of records in the backend.
+    virtual int
+    totalRowCount () const {
+        return total_count_;
+    }
+
     ///@}
     /*  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  */
 
@@ -140,11 +166,6 @@ public:
     ///@{
 
 public:
-
-    //! The total number of rows.
-    virtual int
-    rowCount (
-            const QModelIndex &parent = QModelIndex()) const;
 
     //! Change model data.
     virtual bool

@@ -153,14 +153,6 @@ void DbViewMoSql::reloadWithFilters (DbViewConfig cfg)
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-int DbViewMoSql::rowCount (const QModelIndex &parent) const
-{
-    Q_UNUSED(parent);
-    return total_count_;
-}
-/* ========================================================================= */
-
-/* ------------------------------------------------------------------------- */
 bool DbViewMoSql::setData (
         const QModelIndex &index, const QVariant &value, int role)
 {
