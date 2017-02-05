@@ -106,6 +106,10 @@ public:
             int column,
             int role) const;
 
+    //! Get the number of records in the backend.
+    virtual int
+    totalRowCount () const = 0;
+
     //! Get the header data; never display or edit roles.
     virtual QVariant
     rowHeaderData (
