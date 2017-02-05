@@ -47,7 +47,11 @@ void InMo::setUserModel(DbViewMo *model)
 /* ------------------------------------------------------------------------- */
 int InMo::totalRowCount() const
 {
-    return user_model_->totalRowCount ();
+    if (user_model_ == NULL) {
+        return -1;
+    } else {
+        return user_model_->totalRowCount ();
+    }
 }
 /* ========================================================================= */
 
