@@ -1003,12 +1003,29 @@ void DbTableView::rowsPerPageChanged (int value)
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-void DbTableView::modelWasResetted()
+void DbTableView::modelWasResetted ()
 {
     pageIndexChanged (inmo->pageIndex());
     rowsPerPageChanged (inmo->pageRowCount ());
-    ui->labelRecords->setText (
-                QObject::tr("%1 records").arg (inmo->totalRowCount ()));
+
+    int reccnt = inmo->totalRowCount ();
+    QString s_label;
+    switch (intreccnt) {
+    case -1: {
+        s_label = tr ("Invalid request");
+        break; }
+    case 0: {
+        s_label = tr ("No records");
+        break; }
+    case 1: {
+        s_label = tr ("1 record");
+        break; }
+    default: {
+        tr("%1 records").arg (reccnt);
+        break; }
+    }
+    ui->labelRecords->setText (s_label);
+
     restoreVisibleStatus ();
 }
 /* ========================================================================= */
