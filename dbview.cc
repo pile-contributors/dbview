@@ -1010,7 +1010,7 @@ void DbTableView::modelWasResetted ()
 
     int reccnt = inmo->totalRowCount ();
     QString s_label;
-    switch (intreccnt) {
+    switch (reccnt) {
     case -1: {
         s_label = tr ("Invalid request");
         break; }
