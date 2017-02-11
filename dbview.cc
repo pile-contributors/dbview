@@ -1021,7 +1021,7 @@ void DbTableView::modelWasResetted ()
         s_label = tr ("1 record");
         break; }
     default: {
-        tr("%1 records").arg (reccnt);
+        s_label = tr("%1 records").arg (reccnt);
         break; }
     }
     ui->labelRecords->setText (s_label);
