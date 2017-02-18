@@ -101,7 +101,7 @@ int DbViewMoSql::readTotalCount (
 
         int result = query.value (0).toInt (&b_ok);
         if (!b_ok) {
-            qDebug() << "NAN:  " << query.value (0).toString();
+            qWarning() << "NAN:  " << query.value (0).toString();
             result = -1;
         }
         return result;
@@ -144,6 +144,7 @@ void DbViewMoSql::reloadWithFilters (DbViewConfig cfg)
     for (;;) {
 
         QString where_clause = getReloadWhereClause (cfg_);
+        qDebug () << where_clause;
 
         total_count_ = readTotalCount (where_clause);
         if (total_count_ == -1) {
