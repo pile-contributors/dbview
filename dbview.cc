@@ -37,8 +37,10 @@ static const char * pgidx = "pgidx";
 DbTableView::DbTableView(
         QWidget *parent) :
     QWidget (parent),
-    ui(new Ui::DbView),
-    inmo(new impl::InMo (this))
+    ui (new Ui::DbView),
+    inmo (new impl::InMo (this)),
+    our_focus_  (false),
+    focus_marker_ (NoFocusMarker)
 {
     DBVIEW_TRACE_ENTRY;
     ui->setupUi(this);
@@ -83,6 +85,19 @@ DbTableView::DbTableView(
 
     setSortingEnabled (true);
 
+
+    ui->tbPg10->installEventFilter (this);
+    ui->tbPg25->installEventFilter (this);
+    ui->tbPg50->installEventFilter (this);
+    ui->tbPg100->installEventFilter (this);
+    ui->tbPrev->installEventFilter (this);
+    ui->tb1->installEventFilter (this);
+    ui->tb2->installEventFilter (this);
+    ui->tb3->installEventFilter (this);
+    ui->tbNext->installEventFilter (this);
+    ui->labelRecords->installEventFilter (this);
+    ui->tableView->installEventFilter (this);
+    ui->tbDownload->installEventFilter (this);
     DBVIEW_TRACE_EXIT;
 }
 /* ========================================================================= */
@@ -894,6 +909,59 @@ int DbTableView::pageRowCount () const
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
+void DbTableView::setFocusMarker (FocusMarkerType value)
+{
+    if (our_focus_) {
+        uninstallFocusMarker ();
+    }
+    focus_marker_ = value;
+    if (our_focus_) {
+        installFocusMarker ();
+    }
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+static QLatin1String blue_bar_at_the_top_marker ("QTableView { border-top: 1px solid blue }");
+static QLatin1String blue_bar_at_the_btm_marker ("QTableView { border-bottom: 1px solid blue }");
+void DbTableView::installFocusMarker ()
+{
+    switch (focus_marker_) {
+    case BlueBarAtTheTop: {
+        QString ss = ui->tableView->styleSheet();
+        ui->tableView->setStyleSheet (ss.append (blue_bar_at_the_top_marker));
+        break; }
+    case BlueBarAtTheBottom: {
+        QString ss = ui->tableView->styleSheet();
+        ui->tableView->setStyleSheet (ss.append (blue_bar_at_the_btm_marker));
+        break; }
+    default: {
+        break; }
+    }
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::uninstallFocusMarker ()
+{
+    switch (focus_marker_) {
+    case BlueBarAtTheTop: {
+        QString ss = ui->tableView->styleSheet();
+        ui->tableView->setStyleSheet (
+                    ss.replace (blue_bar_at_the_top_marker, QString ()));
+        break; }
+    case BlueBarAtTheBottom: {
+        QString ss = ui->tableView->styleSheet();
+        ui->tableView->setStyleSheet (
+                    ss.replace (blue_bar_at_the_btm_marker, QString ()));
+        break; }
+    default: {
+        break; }
+    }
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
 void DbTableView::downloadAsCsv ()
 {
 
@@ -1174,6 +1242,32 @@ void DbTableView::whenPageIndexChanged (int value)
 }
 /* ========================================================================= */
 
+/* ------------------------------------------------------------------------- */
+bool DbTableView::eventFilter (QObject *target, QEvent *event)
+{
+    switch (event->type()) {
+    case QEvent::MouseButtonPress: {
+        ui->tableView->setFocus ();
+        break; }
+    case QEvent::FocusIn: {
+        if (!our_focus_) {
+            our_focus_ = true;
+            installFocusMarker ();
+            emit gotFocus ();
+        }
+        break; }
+    case QEvent::FocusOut: {
+        if (our_focus_) {
+            our_focus_ = false;
+            uninstallFocusMarker();
+            emit lostFocus ();
+        }
+        break; }
+    }
+
+    return QWidget::eventFilter (target, event);
+}
+/* ========================================================================= */
 
 
 

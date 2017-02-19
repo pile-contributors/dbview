@@ -51,6 +51,16 @@ class DBVIEW_EXPORT DbTableView : public QWidget {
     Q_PROPERTY(QTableView::ScrollMode verticalScrollMode READ verticalScrollMode WRITE setVerticalScrollMode RESET resetVerticalScrollMode)
     Q_PROPERTY(QTableView::ScrollMode horizontalScrollMode READ horizontalScrollMode WRITE setHorizontalScrollMode RESET resetHorizontalScrollMode)
 
+
+public:
+
+    enum FocusMarkerType {
+        NoFocusMarker = 0,
+        BlueBarAtTheTop,
+        BlueBarAtTheBottom
+    };
+
+
 public:
 
     //! Default constructor.
@@ -103,7 +113,41 @@ public:
     int
     pageRowCount() const;
 
+    //! Is this control the one with the focus?
+    bool
+    myFocus () const {
+        return our_focus_;
+    }
 
+    //! Do we show that we've got the focus?
+    bool
+    showsFocusMarker () const {
+        return focus_marker_ != NoFocusMarker;
+    }
+
+    //! Do we show that we've got the focus?
+    bool
+    focusMarker () const {
+        return focus_marker_;
+    }
+
+    //! Do we show that we've got the focus?
+    void
+    setFocusMarker (
+            FocusMarkerType value);
+
+protected:
+
+    bool
+    eventFilter (
+            QObject *target,
+            QEvent *event);
+
+    virtual void
+    installFocusMarker();
+
+    virtual void
+    uninstallFocusMarker();
 
 public Q_SLOTS:
 
@@ -472,11 +516,21 @@ Q_SIGNALS:
     rowsPerPageChanged (
         int value);
 
-protected:
+    //! We're informing that we got focus.
+    void
+    gotFocus ();
+
+    //! We're informing that we lost focus.
+    void
+    lostFocus ();
+
+
 
 private:
     Ui::DbView *ui;
     impl::InMo * inmo;
+    bool our_focus_;
+    FocusMarkerType focus_marker_;
 };
 
 #endif // GUARD_DBTABLEVIEW_H_INCLUDE
