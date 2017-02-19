@@ -132,7 +132,7 @@ void DbTableView::setUserModel (DbViewMo *model)
     inmo->setUserModel (model);
     ui->tableView->setModel (inmo);
     setAllFilterWidgets ();
-    pageIndexChanged (0);
+    whenPageIndexChanged (0);
 
 
     sm = ui->tableView->selectionModel ();
@@ -985,7 +985,7 @@ void DbTableView::setRowsPerPage (int value)
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-void DbTableView::rowsPerPageChanged (int value)
+void DbTableView::whenRowsPerPageChanged (int value)
 {
     // keep the buttons in sync
     bool checks[4] = {false, false, false, false};
@@ -999,14 +999,16 @@ void DbTableView::rowsPerPageChanged (int value)
     ui->tbPg25->setChecked (checks[1]);
     ui->tbPg50->setChecked (checks[2]);
     ui->tbPg100->setChecked (checks[3]);
+
+    emit rowsPerPageChanged (value);
 }
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
 void DbTableView::modelWasResetted ()
 {
-    pageIndexChanged (inmo->pageIndex());
-    rowsPerPageChanged (inmo->pageRowCount ());
+    whenPageIndexChanged (inmo->pageIndex());
+    whenRowsPerPageChanged (inmo->pageRowCount ());
 
     int reccnt = inmo->totalRowCount ();
     QString s_label;
@@ -1045,7 +1047,7 @@ bool DbTableView::hasFilter(int column) const
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-void DbTableView::pageIndexChanged (int value)
+void DbTableView::whenPageIndexChanged (int value)
 {
     int show_value = value + 1;
     int pgcnt = inmo->pagesCount ();
@@ -1167,6 +1169,8 @@ void DbTableView::pageIndexChanged (int value)
         ui->tbNext->setEnabled (true);
     }
     restoreVisibleStatus ();
+
+    emit pageIndexChanged (value);
 }
 /* ========================================================================= */
 

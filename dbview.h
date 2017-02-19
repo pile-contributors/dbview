@@ -161,12 +161,12 @@ private Q_SLOTS:
 
     //! We're informed that the index of current page changed.
     void
-    pageIndexChanged (
+    whenPageIndexChanged (
         int value);
 
     //! We're informed that the number of rows in each page changed.
     void
-    rowsPerPageChanged (
+    whenRowsPerPageChanged (
         int value);
 
 
@@ -461,6 +461,16 @@ Q_SIGNALS:
     selectionChanged (
             const QItemSelection &selected,
             const QItemSelection &deselected);
+
+    //! We're informing that the index of current page changed.
+    void
+    pageIndexChanged (
+        int value);
+
+    //! We're informing that the number of rows in each page changed.
+    void
+    rowsPerPageChanged (
+        int value);
 
 protected:
 
