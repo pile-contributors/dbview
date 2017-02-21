@@ -922,6 +922,13 @@ void DbTableView::setFocusMarker (FocusMarkerType value)
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
+void DbTableView::setFocusBackDoor()
+{
+    ui->tableView->setFocus ();
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
 static QLatin1String blue_bar_at_the_top_marker ("QTableView { border-top: 1px solid blue }");
 static QLatin1String blue_bar_at_the_btm_marker ("QTableView { border-bottom: 1px solid blue }");
 void DbTableView::installFocusMarker ()

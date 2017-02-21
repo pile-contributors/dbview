@@ -39,6 +39,7 @@ void InMo::setUserModel(DbViewMo *model)
         disconnectModel ();
     }
     user_model_ = model;
+    page_index_ = 0;
     if (model != NULL) {
         runReload ();
         connectModel (model);

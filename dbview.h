@@ -136,6 +136,10 @@ public:
     setFocusMarker (
             FocusMarkerType value);
 
+    //! Set tghe damn thing.
+    void
+    setFocusBackDoor ();
+
 protected:
 
     bool
