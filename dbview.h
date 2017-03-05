@@ -140,6 +140,16 @@ public:
     void
     setFocusBackDoor ();
 
+    //! Get current row.
+    int
+    currentRow () const;
+
+    //! Set current row.
+    void
+    setCurrentRow (
+            int row) const;
+
+
 protected:
 
     bool

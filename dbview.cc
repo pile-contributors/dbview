@@ -929,6 +929,39 @@ void DbTableView::setFocusBackDoor()
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
+int DbTableView::currentRow () const
+{
+    QItemSelectionModel * sm = ui->tableView->selectionModel ();
+    if (sm == NULL) {
+        return -1;
+    } else {
+        return sm->currentIndex ().row ();
+    }
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::setCurrentRow (int row) const
+{
+    QItemSelectionModel * sm = ui->tableView->selectionModel ();
+    if (sm != NULL) {
+        if (row < 0) {
+            sm->setCurrentIndex (
+                        sm->model()->index(-1, 0),
+                        QItemSelectionModel::Clear |
+                        QItemSelectionModel::Rows);
+        } else {
+            sm->setCurrentIndex (
+                        sm->model()->index(row, 0),
+                        QItemSelectionModel::ClearAndSelect |
+                        QItemSelectionModel::Current |
+                        QItemSelectionModel::Rows);
+        }
+    }
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
 static QLatin1String blue_bar_at_the_top_marker ("QTableView { border-top: 1px solid blue }");
 static QLatin1String blue_bar_at_the_btm_marker ("QTableView { border-bottom: 1px solid blue }");
 void DbTableView::installFocusMarker ()
