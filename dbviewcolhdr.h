@@ -110,8 +110,20 @@ public:
 public slots:
 
     void
-    positionAllControls (
-            int first=0);
+    positionAllControls () {
+        positionControls (0);
+    }
+
+    void
+    positionControlsWithDelta (
+            int delta) {
+        positionControls (0, delta);
+    }
+
+    void
+    positionControls (
+            int first=0,
+            int delta=0);
 
     void
     filterTriggerByFilters();
@@ -130,7 +142,8 @@ private:
     setHdrGeom (
             int logicalIndex,
             QWidget *widget = 0,
-            int width = -1);
+            int width = -1,
+            int delta = 0);
 
 signals:
 

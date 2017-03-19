@@ -106,7 +106,7 @@ int DbViewMoSql::readTotalCount (
         }
         return result;
     } else {
-        qDebug() << "No result (!)";
+        DBVIEW_DEBUGM("No result (!)");
         return -1;
     }
 }
@@ -116,7 +116,7 @@ int DbViewMoSql::readTotalCount (
 void DbViewMoSql::prepareFilteredQuery (
         const QString & s_statement, QSqlQuery & q)
 {
-    qDebug () << s_statement;
+    DBVIEW_DEBUGS(s_statement);
 
     for (;;) {
         if (!q.prepare (s_statement)) {
@@ -144,7 +144,7 @@ void DbViewMoSql::reloadWithFilters (DbViewConfig cfg)
     for (;;) {
 
         QString where_clause = getReloadWhereClause (cfg_);
-        qDebug () << where_clause;
+        DBVIEW_DEBUGS(where_clause);
 
         total_count_ = readTotalCount (where_clause);
         if (total_count_ == -1) {
@@ -156,13 +156,26 @@ void DbViewMoSql::reloadWithFilters (DbViewConfig cfg)
         } else {
             ordering = "DESC";
         }
+
         QString order_by;
         if (cfg.sort_column == -1) {
-            order_by = QString();
+            // order_by = QString();
+        } else if (cfg.sort_column >= record ().count()) {
+            qWarning() << "Column selected for ordering ("
+                       << cfg.sort_column
+                       << ") is outside valid range [0; "
+                       << record ().count()
+                       << ")";
+            // order_by = QString();
         } else {
-            order_by = QString ("ORDER BY %1 %2").arg (
-                        record ().fieldName (cfg.sort_column))
-                    .arg (ordering);
+            QString s_col_name = record ().fieldName (cfg.sort_column);
+            if (s_col_name.isEmpty()) {
+                qCritical() << "No name for column " << cfg.sort_column;
+            } else {
+                order_by = QString ("ORDER BY %1 %2")
+                        .arg (s_col_name)
+                        .arg (ordering);
+            }
         }
         QString s_crt_query = QString (
                     "SELECT * FROM %1 %2 %3 LIMIT %4 OFFSET %5;")

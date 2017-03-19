@@ -13,9 +13,19 @@
 #include <dbview/dbview-config.h>
 
 #if 0
-#    define DBVIEW_DEBUGM printf
+#    include <QString>
+#    include <QDebug>
+#    define DBVIEW_DEBUGM qDebug() << QString::asprintf
 #else
 #    define DBVIEW_DEBUGM black_hole
+#endif
+
+#if 0
+#    include <QString>
+#    include <QDebug>
+#    define DBVIEW_DEBUGS qDebug() <<
+#else
+#    define DBVIEW_DEBUGS black_hole
 #endif
 
 #if 0

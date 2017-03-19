@@ -206,6 +206,7 @@ QWidget * DbViewColFilterPattern::control (int column, DbViewColHdr *parent)
 {
     Q_UNUSED(column);
     QLineEdit * result = new QLineEdit (parent);
+    result->setClearButtonEnabled (true);
     result->setToolTip (
                 QObject::tr (
                     "Enter text pattern to filter this column"));
@@ -230,7 +231,20 @@ void DbViewColFilterPattern::updateFromWidget (QWidget *wdg, int column)
     if (result == NULL) {
         return;
     }
-    pattern_.setPattern (result->text ());
+    QString s_pattern = result->text ().trimmed ();
+    if (!s_pattern.isEmpty()) {
+        static QLatin1Char regex_start ('^');
+        static QLatin1Char regex_end ('$');
+        static QLatin1String regex_any (".*");
+
+        if (!s_pattern.startsWith (regex_start)) {
+            s_pattern.prepend (regex_any);
+        }
+        if (!s_pattern.endsWith (regex_end)) {
+            s_pattern.append (regex_any);
+        }
+    }
+    pattern_.setPattern (s_pattern);
 }
 /* ========================================================================= */
 

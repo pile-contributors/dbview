@@ -17,6 +17,8 @@
 #include "dbviewcolhdr.h"
 
 #include <QWidget>
+#include <QScrollBar>
+#include <QDebug>
 
 static QLatin1String s_one("1");
 static QLatin1String s_two("2");
@@ -82,6 +84,8 @@ DbTableView::DbTableView(
     hdr->setSectionsClickable (true);
     connect(hdr, &DbViewColHdr::filterChanged,
             this, &DbTableView::f5);
+    connect(ui->tableView->horizontalScrollBar (), &QScrollBar::valueChanged,
+            this, &DbTableView::positionFiltersWithDelta);
 
     setSortingEnabled (true);
 
@@ -104,7 +108,7 @@ DbTableView::DbTableView(
 
 /* ------------------------------------------------------------------------- */
 /**
- * Detailed description for destructor.
+ * .
  */
 DbTableView::~DbTableView()
 {
@@ -122,6 +126,29 @@ DbTableView::~DbTableView()
 QTableView *DbTableView::internalTableView () const
 {
     return ui->tableView;
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void DbTableView::positionFiltersWithDelta (int delta)
+{
+    DbViewColHdr * hdr = qobject_cast<DbViewColHdr *>(horizontalHeader());
+    if (hdr == NULL)
+        return;
+
+    switch (ui->tableView->horizontalScrollMode()) {
+    case QAbstractItemView::ScrollPerItem: {
+        // This does not work as expected
+        // because last scroll position is not at item's boundary
+        delta = hdr->sectionPosition(delta+2);
+        break; }
+    case QAbstractItemView::ScrollPerPixel: {
+        break; }
+    default:
+        return;
+    }
+
+    hdr->positionControlsWithDelta (delta);
 }
 /* ========================================================================= */
 
@@ -146,7 +173,15 @@ void DbTableView::setUserModel (DbViewMo *model)
     ui->tableView->setModel (NULL);
     inmo->setUserModel (model);
     ui->tableView->setModel (inmo);
-    setAllFilterWidgets ();
+
+    // The model ddoes not have a chance to set the filters up as the
+    // table is the one to hold the filters.
+    // Some models (DbViewMoSql) cache the configuration but tht is only
+    // that - a cache; the table does not read the configuration
+    // from the model as part of the instalation process.
+
+    // setAllFilterWidgets ();
+
     whenPageIndexChanged (0);
 
 
@@ -282,16 +317,17 @@ void DbTableView::setAllFilterWidgets ()
     const QList<DbViewColFilter*> & filters = inmo->colFilters ();
 
     int i_max = inmo->columnCount ();
-
+    int f_count = filters.count ();
     for (int i = 0; i < i_max; ++i) {
         QWidget * wdg = NULL;
-        if (i < filters.count()) {
-            DbViewColFilter* filter = filters[i];
-            if (filter != NULL) {
-                wdg = filter->createControl (i, hhdr);
-                if (wdg != NULL) {
-                    hhdr->setControl (i, wdg);
-                }
+        if (i >= f_count) {
+            break;
+        }
+        DbViewColFilter* filter = filters[i];
+        if (filter != NULL) {
+            wdg = filter->createControl (i, hhdr);
+            if (wdg != NULL) {
+                hhdr->setControl (i, wdg);
             }
         }
     }

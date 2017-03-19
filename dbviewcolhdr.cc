@@ -26,6 +26,7 @@
 
 #include <QPainter>
 #include <QCursor>
+#include <QDebug>
 
 /*  INCLUDES    ============================================================ */
 //
@@ -105,12 +106,23 @@ QWidget *DbViewColHdr::control (int column)
 
 /* ------------------------------------------------------------------------- */
 void DbViewColHdr::setHdrGeom (
-        int column, QWidget * widget, int width)
+        int column, QWidget * widget, int width, int delta)
 {
+    if (isSectionHidden (column)) {
+        widget->hide();
+        return;
+    } else if (!widget->isVisible()) {
+        widget->show ();
+    }
+
     if (width == -1) {
-        width = sectionSize(column);
+        width = sectionSize (column);
     }
     width -= horiz_space*2;
+    if (width <= 0) {
+        widget->hide();
+        return;
+    }
 
     if (widget == NULL) {
         if (column >= controls_.count())
@@ -122,12 +134,25 @@ void DbViewColHdr::setHdrGeom (
 
 
     if (column > count ()) {
-        widget->move (-1000, 0);
+        widget->hide ();
+        qWarning () << "Cannot set header geometry for widget because the index "
+                    << column << " is out of valid range [0; "
+                    << count()
+                    << ")";
     } else {
-        int posx = sectionPosition (column) + horiz_space;
-        widget->setGeometry (
-                    QRect (posx, vert_space*2+half_, width,
-                           half_-2*vert_space));
+        int posx = sectionPosition (column) + horiz_space - delta;
+        if (posx+width < 0) {
+            return;
+        }
+        int posy = vert_space*2+half_;
+        int h = widget->sizeHint().height();
+        int h_lim = half_-2*vert_space;
+        if (h > h_lim) {
+            h = h_lim;
+        } else {
+            posy += (h_lim - h) / 2;
+        }
+        widget->setGeometry (QRect (posx, posy, width, h));
     }
 }
 /* ========================================================================= */
@@ -270,7 +295,7 @@ void DbViewColHdr::resizeControl (int column, int oldSize, int newSize)
     if (controls_.count() <= column)
         return;
 
-    positionAllControls (column);
+    positionControls (column);
 }
 /* ========================================================================= */
 
@@ -307,13 +332,13 @@ void DbViewColHdr::removeAllControls ()
 /* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
-void DbViewColHdr::positionAllControls (int first)
+void DbViewColHdr::positionControls (int first, int delta)
 {
     int i_max = qMin(count(), controls_.count());
     for (int i = first; i < i_max; ++i) {
         QWidget * wdg = controls_[i];
         if (wdg != NULL) {
-            setHdrGeom (i, wdg);
+            setHdrGeom (i, wdg, -1, delta);
         }
     }
 }

@@ -243,6 +243,7 @@ private Q_SLOTS:
     ///@{
 
 public:
+
     void
     updateFiltersFromWidgets() const;
 
@@ -261,6 +262,15 @@ public:
             int column,
             bool include,
             const QString & value);
+
+    //! Filter contents in a column using a simple string filtering.
+    virtual void
+    setColumnFilterPattern (
+            int column,
+            bool include=true,
+            const QString & initial_value = QString ()) {
+        setColumnFilter (column, include, initial_value);
+    }
 
     //! Filter contents in a column using a custom filtering.
     virtual void
@@ -282,7 +292,6 @@ public:
             int column,
             DbViewColFilter * filter);
 
-private:
 
     //! Update the header to show proper widgets.
     void
@@ -487,6 +496,7 @@ private Q_SLOTS:
     void whenCurrentChanged (const QModelIndex &current, const QModelIndex &previous);
     void whenCurrentRowChanged (const QModelIndex &current, const QModelIndex &previous);
     void whenCurrentColumnChanged (const QModelIndex &current, const QModelIndex &previous);
+    void positionFiltersWithDelta (int delta);
 
 
     ///@}
