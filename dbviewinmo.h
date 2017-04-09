@@ -218,6 +218,12 @@ public slots:
     virtual void
     reloadCachedData ();
 
+private slots:
+
+    //! Being informed that the model got destroyed.
+    void
+    userModelDestroy();
+
 private:
     void connectModel (DbViewMo *model);
     void disconnectModel ();

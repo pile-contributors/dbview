@@ -2,11 +2,11 @@
 #include "dbviewmo.h"
 #include "dbviewcolfilter.h"
 #include "dbview-globals.h"
+#include "dbview-private.h"
 
 #include <QtConcurrent\QtConcurrent>
 
 using namespace impl;
-/* ========================================================================= */
 
 /* ------------------------------------------------------------------------- */
 InMo::InMo(QObject *parent) :
@@ -115,7 +115,19 @@ void InMo::connectModel (DbViewMo *user_model)
     connect(model, &QAbstractItemModel::columnsMoved,
             this, &QAbstractItemModel::columnsMoved);
 
+    connect(model, &QObject::destroyed,
+            this, &InMo::userModelDestroy);
+
     reloadCachedData ();
+}
+/* ========================================================================= */
+
+/* ------------------------------------------------------------------------- */
+void InMo::userModelDestroy ()
+{
+    QAbstractItemModel * snd = qobject_cast<QAbstractItemModel*>(sender());
+    Q_UNUSED(snd);
+    DBVIEW_DEBUGS("user model dies");
 }
 /* ========================================================================= */
 
