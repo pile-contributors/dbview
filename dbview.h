@@ -163,6 +163,11 @@ protected:
     virtual void
     uninstallFocusMarker();
 
+    //! A new translator is loaded or the system language is changed.
+    void
+    changeEvent (
+            QEvent* event);
+
 public Q_SLOTS:
 
     //! Reaquire the data.

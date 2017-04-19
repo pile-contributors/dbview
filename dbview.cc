@@ -1345,5 +1345,30 @@ bool DbTableView::eventFilter (QObject *target, QEvent *event)
 }
 /* ========================================================================= */
 
+/* ------------------------------------------------------------------------- */
+void DbTableView::changeEvent (QEvent* event)
+{
+    if(event != NULL) {
+        switch(event->type()) {
+
+        case QEvent::LanguageChange: {
+            // this event is send if a translator is loaded
+            ui->retranslateUi(this);
+            break; }
+
+        case QEvent::LocaleChange: {
+            // this event is send, if the system, language changes
+            /*
+            QString locale = QLocale::system().name();
+            locale.truncate(locale.lastIndexOf('_'));
+            loadLanguage(locale);
+            */
+            break; }
+        }
+    }
+    QWidget::changeEvent(event);
+}
+/* ========================================================================= */
+
 
 

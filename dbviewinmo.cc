@@ -349,6 +349,10 @@ void InMo::runReload ()
 /* ------------------------------------------------------------------------- */
 void InMo::reloadWithFilters ()
 {
+    if (user_model_ == NULL) {
+        return;
+    }
+
     disconnectModel ();
     runReload ();
     connectModel (user_model_);
