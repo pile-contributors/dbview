@@ -27,6 +27,7 @@
 #include <QSortFilterProxyModel>
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlQueryModel>
+#include <QtSql/QSqlQuery>
 
 /*  INCLUDES    ============================================================ */
 //
